@@ -1,0 +1,39 @@
+{
+  "@@locale": "pt",
+  "home": "Home",
+  "potentiostat": "Potenciostato",
+  "connected": "Online",
+  "@connected": {
+    "description": "The status of the connection to the bluetooth device"
+  },
+  "connectDevice": "Conectar dispositivo",
+  "@connectDevice": {
+    "description": "Connect to a bluetooth device"
+  },
+  "availableDevices": "Dispositivos disponíveis",
+  "@availableDevices": {
+    "description": "A list of available bluetooth devices"
+  },
+  "refresh": "Atualizar",
+  "@refresh": {
+    "description": "Refresh the list of available devices"
+  },
+  "disconnect": "Desconectar",
+  "@disconnect": {
+    "description": "Disconnect from the currently connected device"
+  },
+  "openBluetoothSettings": "Abrir configurações de bluetooth",
+  "@openBluetoothSettings": {
+    "description": "Open the bluetooth settings on the device"
+  },
+  "noDevicesFound": "Nenhum dispositivo encontrado",
+
+  "experiments": "Experimentos",
+  "@experiments": {
+    "description": "A list of experiments that can be run on the device"
+  },
+  "newExperiment": "Novo",
+  "@newExpeiment": {
+    "description": "Cria um novo experimento"
+  }
+}

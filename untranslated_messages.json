@@ -1,0 +1,15 @@
+{
+  "en": [
+    "home",
+    "potentiostat",
+    "connected",
+    "connectDevice",
+    "availableDevices",
+    "refresh",
+    "disconnect",
+    "openBluetoothSettings",
+    "noDevicesFound",
+    "experiments",
+    "newExperiment"
+  ]
+}
