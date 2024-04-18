@@ -6,6 +6,10 @@
   "@connected": {
     "description": "The status of the connection to the bluetooth device"
   },
+  "disconnected": "Offline",
+  "@disconnected": {
+    "description": "The status of the connection to the bluetooth device"
+  },
   "connectDevice": "Conectar dispositivo",
   "@connectDevice": {
     "description": "Connect to a bluetooth device"
@@ -22,11 +26,18 @@
   "@disconnect": {
     "description": "Disconnect from the currently connected device"
   },
+  "disconnectDevice": "Desconectar dispositivo",
+  "disconnectDeviceMessage": "Você tem certeza que deseja desconectar o dispositivo?",
   "openBluetoothSettings": "Abrir configurações de bluetooth",
   "@openBluetoothSettings": {
     "description": "Open the bluetooth settings on the device"
   },
   "noDevicesFound": "Nenhum dispositivo encontrado",
+  "noDevicesConnected": "Nenhum dispositivo conectado",
+  "connect": "Conectar",
+  "@connect": {
+    "description": "Connect to the selected device"
+  },
 
   "experiments": "Experimentos",
   "@experiments": {
@@ -35,5 +46,7 @@
   "newExperiment": "Novo",
   "@newExpeiment": {
     "description": "Cria um novo experimento"
-  }
+  },
+
+  "cancel": "Cancelar"
 }

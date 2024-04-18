@@ -3,13 +3,19 @@
     "home",
     "potentiostat",
     "connected",
+    "disconnected",
     "connectDevice",
     "availableDevices",
     "refresh",
     "disconnect",
+    "disconnectDevice",
+    "disconnectDeviceMessage",
     "openBluetoothSettings",
     "noDevicesFound",
+    "noDevicesConnected",
+    "connect",
     "experiments",
-    "newExperiment"
+    "newExperiment",
+    "cancel"
   ]
 }

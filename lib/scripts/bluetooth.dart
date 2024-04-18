@@ -1,118 +1,51 @@
-import 'package:flutter/material.dart';
-import 'package:quick_blue/quick_blue.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+// Check bluetooth permissions
 import 'package:permission_handler/permission_handler.dart';
+import 'package:quick_blue/quick_blue.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class BluetoothDevicesList extends StatefulWidget {
-  final ValueNotifier<bool> isScanning;
-  final Function stopScan;
-  final Function onConnect;
+Future<bool> checkBluetoothPermissions() async {
+  Map<Permission, PermissionStatus> statuses = await [
+    Permission.bluetooth,
+    Permission.bluetoothScan,
+    Permission.bluetoothConnect,
+    Permission.location,
+  ].request();
 
-  const BluetoothDevicesList({
-    super.key,
-    required this.isScanning,
-    required this.stopScan,
-    required this.onConnect,
-  });
+  bool allGranted = statuses.values.every((status) => status.isGranted);
 
-  @override
-  BluetoothDevicesListState createState() => BluetoothDevicesListState();
+  return allGranted;
 }
 
-class BluetoothDevicesListState extends State<BluetoothDevicesList> {
-  final List devices = [];
+// Scan for devices
+Future<void> scanForDevices() async {
+  QuickBlue.startScan();
+}
 
-  Future<bool> checkPermissions() async {
-    Map<Permission, PermissionStatus> statuses = await [
-      Permission.bluetoothConnect,
-      Permission.bluetoothScan,
-      Permission.bluetooth,
-      Permission.location,
-    ].request();
+// Stop scanning for devices
+void stopScanning() {
+  QuickBlue.stopScan();
+}
 
-    if (statuses[Permission.bluetooth] == PermissionStatus.granted) {
-      return true;
-    }
-    return false;
-  }
+// Connect to bluetooth device
+Future<void> connectToDevice(deviceId) async {
+  // Save to shared preferences
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setString('connectedDevice', deviceId);
 
-  Future<void> bluetoothOn() async {
-    QuickBlue.isBluetoothAvailable().then((isAvailable) {
-      if (!isAvailable) {
-        // Open Bluetooth settings on the device
-        if (Theme.of(context).platform == TargetPlatform.android) {
-          // Open Bluetooth settings on Android
-          Permission.bluetooth.request();
-        }
-      } else {
-        print('Bluetooth is on');
-      }
-    });
-  }
+  return QuickBlue.connect(deviceId);
+}
 
-  Future<void> scanDevices() async {
-    print('Scanning for devices');
-    devices.clear();
+// Disconnect from bluetooth device
+void disconnectFromDevice(deviceId) {
+  // Remove from shared preferences
+  SharedPreferences.getInstance().then((prefs) {
+    prefs.setString('connectedDevice', '');
+  });
+  return QuickBlue.disconnect(deviceId);
+}
 
-    QuickBlue.scanResultStream.listen((result) {
-      // Add the device to the list
-      setState(() {
-        devices.add(result);
-      });
-    });
-
-    QuickBlue.startScan();
-
-    // Stop scanning after 10 seconds
-    Future.delayed(const Duration(seconds: 10), () {
-      QuickBlue.stopScan();
-      widget.stopScan();
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Check if the app has the necessary permissions
-    checkPermissions().then((hasPermissions) {
-      if (hasPermissions) {
-        bluetoothOn();
-      }
-    });
-
-    // Listen to the isScanning value
-    widget.isScanning.addListener(() {
-      if (widget.isScanning.value) {
-        scanDevices();
-      } else {
-        QuickBlue.stopScan();
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        if (widget.isScanning.value)
-          const Center(
-            child: CircularProgressIndicator(),
-          ),
-        if (devices.isEmpty && !widget.isScanning.value)
-          Center(
-            child: Text(AppLocalizations.of(context)!.noDevicesFound),
-          ),
-        for (var device in devices)
-          ListTile(
-            title: Text(device.name),
-            subtitle: Text(device.address),
-            onTap: () {
-              widget.stopScan();
-              widget.onConnect(device);
-            },
-          ),
-      ],
-    );
-  }
+// Get connected device from shared preferences
+Future<String> getConnectedDevice() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString('connectedDevice') ?? '';
 }

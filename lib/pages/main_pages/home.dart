@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:labsense/components/blinking_circle.dart';
 import 'package:labsense/components/experiment_card_preview.dart';
+import 'package:labsense/scripts/bluetooth.dart';
 import 'package:smooth_scroll_multiplatform/smooth_scroll_multiplatform.dart';
 
 import '../connect_device/device_connection.dart';
@@ -98,10 +99,16 @@ class _HomeState extends State<Home> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               // Dot
-                              const BlinkingCircle(),
+                              BlinkingCircle(
+                                  color: getConnectedDevice() != ''
+                                      ? Colors.green
+                                      : Colors.red),
                               const SizedBox(width: 4.0),
                               Text(
-                                AppLocalizations.of(context)!.connected,
+                                getConnectedDevice() != ''
+                                    ? AppLocalizations.of(context)!.connected
+                                    : AppLocalizations.of(context)!
+                                        .disconnected,
                                 style: Theme.of(context)
                                     .textTheme
                                     .titleMedium!

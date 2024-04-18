@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class BlinkingCircle extends StatefulWidget {
-  const BlinkingCircle({super.key});
+  final MaterialColor color;
+
+  const BlinkingCircle({super.key, required this.color});
 
   @override
   BlinkingCircleState createState() => BlinkingCircleState();
@@ -47,7 +49,7 @@ class BlinkingCircleState extends State<BlinkingCircle>
               width: 8.0 + (_controller!.value * 8),
               height: 8.0 + (_controller!.value * 8),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(1 - _controller!.value),
+                color: widget.color.withOpacity(1 - _controller!.value),
                 shape: BoxShape.circle,
               ),
             );
@@ -56,8 +58,8 @@ class BlinkingCircleState extends State<BlinkingCircle>
         Container(
           width: 8.0,
           height: 8.0,
-          decoration: const BoxDecoration(
-            color: Colors.green,
+          decoration: BoxDecoration(
+            color: widget.color,
             shape: BoxShape.circle,
           ),
         ),
