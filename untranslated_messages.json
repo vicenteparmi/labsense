@@ -16,6 +16,12 @@
     "connect",
     "experiments",
     "newExperiment",
-    "cancel"
+    "cancel",
+    "settings",
+    "abouttheapp",
+    "version",
+    "developedby",
+    "licenses",
+    "licensesDescription"
   ]
 }

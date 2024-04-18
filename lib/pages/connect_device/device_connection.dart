@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:quick_blue/quick_blue.dart';
-import 'package:smooth_scroll_multiplatform/smooth_scroll_multiplatform.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../components/blinking_circle.dart';
@@ -81,108 +80,101 @@ class _ConnectDeviceState extends State<ConnectDevice> {
               isConnected = false;
             });
           }),
-      body: DynMouseScroll(builder: (context, controller, physics) {
-        return ListView(
-          controller: controller,
-          padding: const EdgeInsets.only(bottom: 16.0, left: 16.0, right: 16.0),
-          physics: physics,
-          children: [
-            Hero(
-              tag: 'potentiostat_headline',
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(48.0),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    const SizedBox(height: 24.0),
-                    // Image
-                    Image.asset(
-                      'assets/images/potentiostat.png',
-                      height: 180.0,
-                      fit: BoxFit.contain,
-                      semanticLabel: 'Potentiostat picture',
-                    ),
-                    const SizedBox(
-                      height: 12.0,
-                    ),
-                    Text(
-                      AppLocalizations.of(context)!.potentiostat,
-                      style:
-                          Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onPrimaryContainer,
-                              ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        // Dot
-                        BlinkingCircle(
-                          color: isConnected ? Colors.green : Colors.red,
+      body: ListView(
+        padding: const EdgeInsets.only(bottom: 16.0, left: 16.0, right: 16.0),
+        children: [
+          Hero(
+            tag: 'potentiostat_headline',
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(48.0),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  const SizedBox(height: 24.0),
+                  // Image
+                  Image.asset(
+                    'assets/images/potentiostat.png',
+                    height: 180.0,
+                    fit: BoxFit.contain,
+                    semanticLabel: 'Potentiostat picture',
+                  ),
+                  const SizedBox(
+                    height: 12.0,
+                  ),
+                  Text(
+                    AppLocalizations.of(context)!.potentiostat,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
                         ),
-                        const SizedBox(width: 4.0),
-                        Text(
-                          isConnected
-                              ? AppLocalizations.of(context)!.connected
-                              : AppLocalizations.of(context)!.disconnected,
-                          style:
-                              Theme.of(context).textTheme.titleMedium!.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onPrimaryContainer,
-                                  ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24.0),
-                  ],
-                ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      // Dot
+                      BlinkingCircle(
+                        color: isConnected ? Colors.green : Colors.red,
+                      ),
+                      const SizedBox(width: 4.0),
+                      Text(
+                        isConnected
+                            ? AppLocalizations.of(context)!.connected
+                            : AppLocalizations.of(context)!.disconnected,
+                        style:
+                            Theme.of(context).textTheme.titleMedium!.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onPrimaryContainer,
+                                ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24.0),
+                ],
               ),
             ),
-            const SizedBox(height: 24.0),
-            Text(AppLocalizations.of(context)!.availableDevices,
-                style: Theme.of(context).textTheme.titleLarge,
-                textAlign: TextAlign.center),
-            const SizedBox(height: 16.0),
-            // Build the list of available devices
-            LayoutBuilder(builder: (context, constraints) {
-              if (_scanResults.isEmpty) {
-                return Center(
-                  child: Text(
-                    AppLocalizations.of(context)!.noDevicesFound,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                );
-              } else {
-                return Column(
-                  children: _scanResults
-                      .map((result) => ListTile(
-                            title: Text('${result.name}(${result.rssi})'),
-                            subtitle: Text(result.deviceId),
-                            trailing: ElevatedButton(
-                              onPressed: () {
-                                // Connect to the device
-                                connectToDevice(result.deviceId);
-                                setState(() {
-                                  isConnected = true;
-                                  deviceID = result.deviceId;
-                                });
-                              },
-                              child:
-                                  Text(AppLocalizations.of(context)!.connect),
-                            ),
-                          ))
-                      .toList(),
-                );
-              }
-            }),
-          ],
-        );
-      }),
+          ),
+          const SizedBox(height: 24.0),
+          Text(AppLocalizations.of(context)!.availableDevices,
+              style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center),
+          const SizedBox(height: 16.0),
+          // Build the list of available devices
+          LayoutBuilder(builder: (context, constraints) {
+            if (_scanResults.isEmpty) {
+              return Center(
+                child: Text(
+                  AppLocalizations.of(context)!.noDevicesFound,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              );
+            } else {
+              return Column(
+                children: _scanResults
+                    .map((result) => ListTile(
+                          title: Text('${result.name}(${result.rssi})'),
+                          subtitle: Text(result.deviceId),
+                          trailing: ElevatedButton(
+                            onPressed: () {
+                              // Connect to the device
+                              connectToDevice(result.deviceId);
+                              setState(() {
+                                isConnected = true;
+                                deviceID = result.deviceId;
+                              });
+                            },
+                            child: Text(AppLocalizations.of(context)!.connect),
+                          ),
+                        ))
+                    .toList(),
+              );
+            }
+          }),
+        ],
+      ),
     );
   }
 }

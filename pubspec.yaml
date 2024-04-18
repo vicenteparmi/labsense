@@ -15,7 +15,6 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: any
-  smooth_scroll_multiplatform: ^1.0.8
   quick_blue: ^0.4.1+1
   permission_handler: ^11.3.1
   shared_preferences: ^2.2.3

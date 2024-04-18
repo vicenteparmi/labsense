@@ -48,5 +48,15 @@
     "description": "Cria um novo experimento"
   },
 
-  "cancel": "Cancelar"
+  "cancel": "Cancelar",
+
+  "settings": "Configurações",
+  "@settings": {
+    "description": "Settings for the application"
+  },
+  "abouttheapp": "Sobre o aplicativo",
+  "version": "Versão",
+  "developedby": "Desenvolvido por",
+  "licenses": "Licenças",
+  "licensesDescription": "Licenças de código aberto usadas neste aplicativo"
 }
