@@ -1,6 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:labsense/components/material_you_shape.dart';
 import 'package:quick_blue/quick_blue.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -22,6 +25,22 @@ class _ConnectDeviceState extends State<ConnectDevice> {
   bool isScanning = false;
   bool isConnected = false;
   String deviceID = '';
+
+  double scale = 1.0;
+
+  // Animate scale up
+  void scaleUp() {
+    setState(() {
+      scale = 1.2;
+    });
+  }
+
+  // Animate scale down
+  void scaleDown() {
+    setState(() {
+      scale = 1.0;
+    });
+  }
 
   @override
   void initState() {
@@ -83,57 +102,77 @@ class _ConnectDeviceState extends State<ConnectDevice> {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 16.0, left: 16.0, right: 16.0),
         children: [
-          Hero(
-            tag: 'potentiostat_headline',
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(48.0),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  const SizedBox(height: 24.0),
-                  // Image
-                  Image.asset(
-                    'assets/images/potentiostat.png',
-                    height: 180.0,
-                    fit: BoxFit.contain,
-                    semanticLabel: 'Potentiostat picture',
-                  ),
-                  const SizedBox(
-                    height: 12.0,
-                  ),
-                  Text(
-                    AppLocalizations.of(context)!.potentiostat,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color:
-                              Theme.of(context).colorScheme.onPrimaryContainer,
+          GestureDetector(
+            onTapDown: (details) => scaleUp(),
+            onTapCancel: () => scaleDown(),
+            onTapUp: (details) => scaleDown(),
+            child: Hero(
+              tag: 'potentiostat_headline',
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(48.0),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    const SizedBox(height: 24.0),
+                    // Image
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          transform: Matrix4.identity()..scale(scale),
+                          curve: Curves.easeOutCubic,
+                          alignment: Alignment.center,
+                          transformAlignment: Alignment.center,
+                          child: const MaterialYouShape(),
                         ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      // Dot
-                      BlinkingCircle(
-                        color: isConnected ? Colors.green : Colors.red,
-                      ),
-                      const SizedBox(width: 4.0),
-                      Text(
-                        isConnected
-                            ? AppLocalizations.of(context)!.connected
-                            : AppLocalizations.of(context)!.disconnected,
-                        style:
-                            Theme.of(context).textTheme.titleMedium!.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onPrimaryContainer,
-                                ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24.0),
-                ],
+                        Image.asset(
+                          'assets/images/potentiostat.png',
+                          height: 180.0,
+                          fit: BoxFit.contain,
+                          semanticLabel: 'Potentiostat picture',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 12.0,
+                    ),
+                    Text(
+                      AppLocalizations.of(context)!.potentiostat,
+                      style:
+                          Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer,
+                              ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        // Dot
+                        BlinkingCircle(
+                          color: isConnected ? Colors.green : Colors.red,
+                        ),
+                        const SizedBox(width: 4.0),
+                        Text(
+                          isConnected
+                              ? AppLocalizations.of(context)!.connected
+                              : AppLocalizations.of(context)!.disconnected,
+                          style:
+                              Theme.of(context).textTheme.titleMedium!.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onPrimaryContainer,
+                                  ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24.0),
+                  ],
+                ),
               ),
             ),
           ),

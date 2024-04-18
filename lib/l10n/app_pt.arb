@@ -47,6 +47,9 @@
   "@newExpeiment": {
     "description": "Cria um novo experimento"
   },
+  "createNewExperiment": "Criar novo experimento",
+  "experimentTitle": "Título do experimento",
+  "experimentBriefDesc": "Breve descrição",
 
   "cancel": "Cancelar",
 

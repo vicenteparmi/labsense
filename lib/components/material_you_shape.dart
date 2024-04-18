@@ -2,15 +2,13 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class MaterialYouShape extends StatefulWidget {
-  const MaterialYouShape({super.key, required this.pressed});
-
-  final bool pressed;
+  const MaterialYouShape({super.key});
 
   @override
-  _MaterialYouShapeState createState() => _MaterialYouShapeState();
+  MaterialYouShapeState createState() => MaterialYouShapeState();
 }
 
-class _MaterialYouShapeState extends State<MaterialYouShape>
+class MaterialYouShapeState extends State<MaterialYouShape>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
@@ -18,7 +16,7 @@ class _MaterialYouShapeState extends State<MaterialYouShape>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(seconds: 30),
+      duration: const Duration(minutes: 1),
       vsync: this,
     )..repeat();
   }
@@ -45,6 +43,9 @@ class _MaterialYouShapeState extends State<MaterialYouShape>
 class CirclePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
+    double waveHeight = 3; // animationState.value * 3;
+    double waveWidth = 12; // animationState.value * 12;
+
     final center = Offset(size.width / 2, size.height / 2);
     final radius = min(size.width, size.height) / 2 - 20;
 
@@ -54,8 +55,10 @@ class CirclePainter extends CustomPainter {
 
     List<Offset> points = [];
     for (double angle = 0; angle <= 2 * pi; angle += pi / 36) {
-      final x = center.dx + (radius + sin(angle * 12) * 3) * cos(angle);
-      final y = center.dy + (radius + sin(angle * 12) * 3) * sin(angle);
+      final x = center.dx +
+          (radius + sin(angle * waveWidth) * waveHeight) * cos(angle);
+      final y = center.dy +
+          (radius + sin(angle * waveWidth) * waveHeight) * sin(angle);
       points.add(Offset(x, y));
     }
 

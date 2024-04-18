@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -22,6 +23,22 @@ class _HomeState extends State<Home> {
   // card sliding on top on scroll
   final ScrollController _scrollController = ScrollController();
 
+  double scale = 1.0;
+
+  // Animate scale up
+  void scaleUp() {
+    setState(() {
+      scale = 1.2;
+    });
+  }
+
+  // Animate scale down
+  void scaleDown() {
+    setState(() {
+      scale = 1.0;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -44,7 +61,7 @@ class _HomeState extends State<Home> {
       body: CustomScrollView(
         slivers: <Widget>[
           SliverAppBar(
-            expandedHeight: 280.0,
+            expandedHeight: 300.0,
             floating: false,
             pinned: false,
             backgroundColor: Theme.of(context).colorScheme.primaryContainer,
@@ -61,7 +78,10 @@ class _HomeState extends State<Home> {
             ],
             flexibleSpace: FlexibleSpaceBar(
               // Background is a colum with a icon and text below
-              background: InkWell(
+              background: GestureDetector(
+                onTapDown: (details) => scaleUp(),
+                onTapCancel: () => scaleDown(),
+                onTapUp: (details) => scaleDown(),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -81,8 +101,15 @@ class _HomeState extends State<Home> {
                       children: <Widget>[
                         const SizedBox(height: 24.0),
                         // Image
-                        Stack(children: [
-                          const MaterialYouShape(pressed: false),
+                        Stack(alignment: Alignment.center, children: [
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            transform: Matrix4.identity()..scale(scale),
+                            curve: Curves.easeOutCubic,
+                            alignment: Alignment.center,
+                            transformAlignment: Alignment.center,
+                            child: const MaterialYouShape(),
+                          ),
                           // Material You shape
                           Image.asset(
                             'assets/images/potentiostat.png',
@@ -92,7 +119,7 @@ class _HomeState extends State<Home> {
                           ),
                         ]),
                         const SizedBox(
-                          height: 12.0,
+                          height: 8.0,
                         ),
                         Text(
                           AppLocalizations.of(context)!.potentiostat,
