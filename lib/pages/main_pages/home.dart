@@ -82,7 +82,7 @@ class _HomeState extends State<Home> {
                         const SizedBox(height: 24.0),
                         // Image
                         Stack(children: [
-                          const MaterialYouShape(),
+                          const MaterialYouShape(pressed: false),
                           // Material You shape
                           Image.asset(
                             'assets/images/potentiostat.png',

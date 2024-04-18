@@ -1,15 +1,43 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
-class MaterialYouShape extends StatelessWidget {
-  const MaterialYouShape({super.key});
+class MaterialYouShape extends StatefulWidget {
+  const MaterialYouShape({super.key, required this.pressed});
+
+  final bool pressed;
+
+  @override
+  _MaterialYouShapeState createState() => _MaterialYouShapeState();
+}
+
+class _MaterialYouShapeState extends State<MaterialYouShape>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 30),
+      vsync: this,
+    )..repeat();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(200, 200),
-      painter: CirclePainter(),
+    return RotationTransition(
+      turns: _controller,
+      child: CustomPaint(
+        size: const Size(200, 200),
+        painter: CirclePainter(),
+      ),
     );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 }
 
@@ -36,7 +64,9 @@ class CirclePainter extends CustomPainter {
 
     final spline = CatmullRomSpline(points);
 
-    final path = Path()..addPolygon(spline.generateSamples().map((tn) => tn.value).toList(), true);
+    final path = Path()
+      ..addPolygon(
+          spline.generateSamples().map((tn) => tn.value).toList(), true);
 
     canvas.drawPath(path, paint);
   }
