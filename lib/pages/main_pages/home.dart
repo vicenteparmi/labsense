@@ -216,6 +216,7 @@ class _HomeState extends State<Home> {
               delegate: SliverChildBuilderDelegate(
                 (BuildContext context, int index) {
                   return ExperimentCard(
+                      id: index,
                       title: 'Item $index',
                       date: DateTime.now(),
                       description: 'Description');
@@ -232,9 +233,11 @@ class _HomeState extends State<Home> {
                       horizontal: 16.0,
                     ),
                     child: ExperimentCard(
-                        title: 'Item $index',
+                        id: index,
+                        title: 'Experimento #$index',
                         date: DateTime.now(),
-                        description: 'Description'),
+                        description:
+                            'Aqui vai a descrição para o experimento #$index. A descrição é um pouco maior para que possamos ver como o texto se comporta no card. Vamos ver se ele quebra ou se ele se comporta bem.'),
                   );
                 },
                 childCount: 26,
