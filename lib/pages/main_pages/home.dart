@@ -1,13 +1,11 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:labsense/components/blinking_circle.dart';
 import 'package:labsense/components/experiment_card_preview.dart';
 import 'package:labsense/components/material_you_shape.dart';
 import 'package:labsense/pages/experiments/add_new.dart';
 import 'package:labsense/pages/main_pages/settings.dart';
-import 'package:labsense/scripts/bluetooth.dart';
 
 import '../connect_device/device_connection.dart';
 
@@ -19,9 +17,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  // This will display a parlax effect on the background header, with a
-  // card sliding on top on scroll
-  final ScrollController _scrollController = ScrollController();
+  bool isConnected = false;
 
   double scale = 1.0;
 
@@ -39,12 +35,25 @@ class _HomeState extends State<Home> {
     });
   }
 
+  // Check bluetooth connection
+  void checkConnection() {
+    FlutterBluetoothSerial.instance
+        .getBondedDevices()
+        .then((List<BluetoothDevice> devices) {
+      for (BluetoothDevice device in devices) {
+        if (device.isConnected) {
+          setState(() {
+            isConnected = true;
+          });
+        }
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(() {
-      setState(() {});
-    });
+    checkConnection();
   }
 
   @override
@@ -137,12 +146,11 @@ class _HomeState extends State<Home> {
                           children: <Widget>[
                             // Dot
                             BlinkingCircle(
-                                color: getConnectedDevice() != ''
-                                    ? Colors.green
-                                    : Colors.red),
+                              color: isConnected ? Colors.green : Colors.red,
+                            ),
                             const SizedBox(width: 4.0),
                             Text(
-                              getConnectedDevice() != ''
+                              isConnected
                                   ? AppLocalizations.of(context)!.connected
                                   : AppLocalizations.of(context)!.disconnected,
                               style: Theme.of(context)
@@ -246,16 +254,5 @@ class _HomeState extends State<Home> {
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
   }
 }
