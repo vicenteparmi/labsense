@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -11,22 +11,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// If the connection is successful, the data is encoded as ASCII and sent
 /// to the device. Once all the data has been sent, the connection is closed.
 /// If an error occurs during the connection or data sending process,
-/// an error message is printed to the console.
+/// an error message is debugPrinted to the console.
 Future<void> sendDataToDevice(String data) async {
   // Get address from shared preferences
   String address = await getConnectedDevice().then((value) => value[1]);
 
   BluetoothConnection.toAddress(address).then((connection) {
-    print('Connected to the device');
+    debugPrint('Connected to the device');
     connection = connection;
     connection.output.add(Uint8List.fromList(ascii.encode(data)));
     connection.output.allSent.then((_) {
       connection.finish();
-      print('Data sent to the device');
+      debugPrint('Data sent to the device');
     });
   }).catchError((error) {
-    print('Cannot connect, exception occurred');
-    print(error);
+    debugPrint('Cannot connect, exception occurred');
+    debugPrint(error);
   });
 }
 

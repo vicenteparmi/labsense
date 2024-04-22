@@ -5,7 +5,6 @@ import 'package:labsense/components/experiment_card_preview.dart';
 import 'package:labsense/components/material_you_shape.dart';
 import 'package:labsense/pages/experiments/add_new.dart';
 import 'package:labsense/pages/main_pages/settings.dart';
-import 'package:labsense/scripts/bluetooth_com.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../connect_device/device_connection.dart';

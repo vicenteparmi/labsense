@@ -11,7 +11,7 @@ class CreateExperiment extends StatelessWidget {
           title: Text(AppLocalizations.of(context)!.createNewExperiment),
         ),
         body: SingleChildScrollView(
-          padding: EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
               Form(

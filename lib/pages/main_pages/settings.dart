@@ -25,12 +25,12 @@ class SettingsPage extends StatelessWidget {
           ),
           ListTile(
             title: Text(AppLocalizations.of(context)!.version),
-            subtitle: Text('1.0.0'),
+            subtitle: const Text('1.0.0'),
             leading: const Icon(Icons.info),
           ),
           ListTile(
             title: Text(AppLocalizations.of(context)!.developedby),
-            subtitle: Text('To be added'),
+            subtitle: const Text('To be added'),
             leading: const Icon(Icons.code),
           ),
           ListTile(

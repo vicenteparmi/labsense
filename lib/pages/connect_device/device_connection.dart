@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:labsense/components/material_you_shape.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:labsense/scripts/bluetooth_com.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../components/blinking_circle.dart';
@@ -25,9 +24,6 @@ class ConnectDevice extends StatefulWidget {
 }
 
 class _ConnectDeviceState extends State<ConnectDevice> {
-  // Controller for the menu
-  final MenuController _menuController = MenuController();
-
   // Scan results
   late StreamSubscription _subscription;
   List<BluetoothDiscoveryResult> results =
