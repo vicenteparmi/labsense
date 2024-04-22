@@ -5,6 +5,7 @@ import 'package:labsense/components/experiment_card_preview.dart';
 import 'package:labsense/components/material_you_shape.dart';
 import 'package:labsense/pages/experiments/add_new.dart';
 import 'package:labsense/pages/main_pages/settings.dart';
+import 'package:labsense/scripts/database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../connect_device/device_connection.dart';
@@ -230,42 +231,77 @@ class _HomeState extends State<Home> {
               ),
             ),
           ),
-          if (MediaQuery.of(context).size.width > 600)
-            SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 1.5,
+          FutureBuilder<List<Map<String, dynamic>>>(
+            future: openMyDatabase().then((value) {
+              return value.query('experiments',
+                  orderBy: 'last_updated DESC', limit: 3);
+            }),
+            builder: (BuildContext context,
+                AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SliverToBoxAdapter(
+                    child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return SliverToBoxAdapter(
+                    child: Text('Error: ${snapshot.error}'));
+              } else {
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (BuildContext context, int index) {
+                      Map<String, dynamic> experiment = snapshot.data![index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                        ),
+                        child: ExperimentCard(
+                          id: experiment['id'],
+                          title: experiment['title'],
+                          date: DateTime.parse(experiment['created_time']),
+                          description: experiment['brief_description'],
+                        ),
+                      );
+                    },
+                    childCount: snapshot.data!.length,
+                  ),
+                );
+              }
+            },
+          ),
+          SliverToBoxAdapter(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  onPressed: () {},
+                  child: Text(AppLocalizations.of(context)!.viewAll),
+                ),
+              ],
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(
+                left: 16.0,
+                right: 16.0,
+                bottom: 16.0,
               ),
-              delegate: SliverChildBuilderDelegate(
-                (BuildContext context, int index) {
-                  return ExperimentCard(
-                      id: index,
-                      title: 'Item $index',
-                      date: DateTime.now(),
-                      description: 'Description');
-                },
-                childCount: 26,
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.grid_view_rounded,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8.0),
+                  Text(
+                    AppLocalizations.of(context)!.models,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ],
               ),
             ),
-          if (MediaQuery.of(context).size.width <= 600)
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (BuildContext context, int index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                    ),
-                    child: ExperimentCard(
-                        id: index,
-                        title: 'Experimento #$index',
-                        date: DateTime.now(),
-                        description:
-                            'Aqui vai a descrição para o experimento #$index. A descrição é um pouco maior para que possamos ver como o texto se comporta no card. Vamos ver se ele quebra ou se ele se comporta bem.'),
-                  );
-                },
-                childCount: 26,
-              ),
-            ),
+          ),
         ],
       ),
     );

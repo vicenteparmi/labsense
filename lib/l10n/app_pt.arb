@@ -43,15 +43,20 @@
   "@experiments": {
     "description": "A list of experiments that can be run on the device"
   },
+  "models": "Modelos",
+  "viewAll": "Ver todos",
   "newExperiment": "Novo",
   "@newExpeiment": {
     "description": "Cria um novo experimento"
   },
   "createNewExperiment": "Criar novo experimento",
+  "essentialInformation": "Informações essenciais",
   "experimentTitle": "Título do experimento",
   "experimentBriefDesc": "Breve descrição",
+  "requiredField": "Preencha para continuar",
 
   "cancel": "Cancelar",
+  "save": "Salvar",
 
   "settings": "Configurações",
   "@settings": {
