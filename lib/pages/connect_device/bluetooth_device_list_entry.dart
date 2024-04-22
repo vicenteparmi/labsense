@@ -10,13 +10,21 @@ class BluetoothDeviceListEntry extends ListTile {
     super.onLongPress,
     super.enabled,
   }) : super(
-          leading: const Icon(
-              Icons.devices), // @TODO . !BluetoothClass! class aware icon
+          leading: const Icon(Icons.devices),
           title: Text(device.name ?? ""),
           subtitle: Text(device.address.toString()),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
+              device.isConnected
+                  ? const Icon(Icons.import_export)
+                  : const SizedBox(width: 0, height: 0),
+              device.isBonded
+                  ? const Icon(Icons.bluetooth_connected_rounded)
+                  : const SizedBox(width: 0, height: 0),
               rssi != null
                   ? Container(
                       margin: const EdgeInsets.all(8.0),
@@ -31,12 +39,6 @@ class BluetoothDeviceListEntry extends ListTile {
                         ),
                       ),
                     )
-                  : const SizedBox(width: 0, height: 0),
-              device.isConnected
-                  ? const Icon(Icons.import_export)
-                  : const SizedBox(width: 0, height: 0),
-              device.isBonded
-                  ? const Icon(Icons.link)
                   : const SizedBox(width: 0, height: 0),
             ],
           ),

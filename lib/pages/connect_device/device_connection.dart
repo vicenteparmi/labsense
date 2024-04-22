@@ -10,7 +10,15 @@ import '../../components/blinking_circle.dart';
 import 'bluetooth_device_list_entry.dart';
 
 class ConnectDevice extends StatefulWidget {
-  const ConnectDevice({super.key});
+  final Function updateConnection;
+  final bool oldStatus;
+  final String oldName;
+
+  const ConnectDevice(
+      {super.key,
+      required this.updateConnection,
+      required this.oldStatus,
+      required this.oldName});
 
   @override
   State<ConnectDevice> createState() => _ConnectDeviceState();
@@ -27,6 +35,7 @@ class _ConnectDeviceState extends State<ConnectDevice> {
   bool isScanning = true;
   bool isConnected = false;
   String deviceID = '';
+  String connectedDevice = '';
 
   double scale = 1.0;
 
@@ -67,7 +76,7 @@ class _ConnectDeviceState extends State<ConnectDevice> {
       });
     });
 
-    _subscription!.onDone(() {
+    _subscription.onDone(() {
       setState(() {
         isScanning = false;
       });
@@ -77,6 +86,8 @@ class _ConnectDeviceState extends State<ConnectDevice> {
   @override
   void initState() {
     super.initState();
+    isConnected = widget.oldStatus;
+    connectedDevice = widget.oldName;
     // Start discovery
     _startDiscovery();
   }
@@ -92,6 +103,16 @@ class _ConnectDeviceState extends State<ConnectDevice> {
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.connectDevice),
+        scrolledUnderElevation: 0.0,
+        actions: [
+          // Open Bluetooth settings
+          IconButton(
+            icon: const Icon(Icons.settings_bluetooth_rounded),
+            onPressed: () {
+              FlutterBluetoothSerial.instance.openSettings();
+            },
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -113,22 +134,15 @@ class _ConnectDeviceState extends State<ConnectDevice> {
                 width: 24.0, // specify the width
                 height: 24.0, // specify the height
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    Theme.of(context).colorScheme.onPrimaryContainer,
-                  ),
-                  strokeWidth: 2.0,
+                  valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context)
+                      .colorScheme
+                      .onPrimaryContainer
+                      .withOpacity(0.6)),
+                  strokeWidth: 4.0,
                 ),
               )
             : const Icon(Icons.refresh_rounded),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-      bottomNavigationBar: BottomBluetoothBar(
-          menuController: _menuController,
-          disconnect: () {
-            setState(() {
-              isConnected = false;
-            });
-          }),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Column(
@@ -192,7 +206,7 @@ class _ConnectDeviceState extends State<ConnectDevice> {
                           const SizedBox(width: 4.0),
                           Text(
                             isConnected
-                                ? AppLocalizations.of(context)!.connected
+                                ? '${AppLocalizations.of(context)!.connected} ($connectedDevice)'
                                 : AppLocalizations.of(context)!.disconnected,
                             style: Theme.of(context)
                                 .textTheme
@@ -238,9 +252,11 @@ class _ConnectDeviceState extends State<ConnectDevice> {
                               'Unbonding from ${device.address} has succed');
                           setState(() {
                             isConnected = false;
+                            connectedDevice = '';
+                            widget.updateConnection(false, '');
                           });
                           SharedPreferences.getInstance().then((prefs) {
-                            prefs.setString('deviceID', '');
+                            prefs.remove('connectedDevice');
                           });
                         } else {
                           debugPrint('Bonding with ${device.address}...');
@@ -250,11 +266,16 @@ class _ConnectDeviceState extends State<ConnectDevice> {
                               'Bonding with ${device.address} has ${bonded ? 'succed' : 'failed'}.');
                           setState(() {
                             isConnected = bonded;
+                            connectedDevice = (bonded ? device.name : '')!;
+                            widget.updateConnection(bonded, device.name ?? '');
                           });
 
                           // Save to shared preferences
                           SharedPreferences.getInstance().then((prefs) {
-                            prefs.setString('deviceID', bonded ? address : '');
+                            prefs.setStringList('connectedDevice', [
+                              device.name ?? device.address,
+                              device.address,
+                            ]);
                           });
                         }
                         setState(() {
@@ -323,8 +344,8 @@ class BottomBluetoothBar extends StatelessWidget {
               menuChildren: <PopupMenuEntry>[
                 PopupMenuItem(
                   onTap: () {
-                    // Send data to the device
-                    sendDataToDevice('Hello from Labsense!');
+                    // Open Bluetooth settings
+                    FlutterBluetoothSerial.instance.openSettings();
                   },
                   child: ListTile(
                     leading: const Icon(Icons.bluetooth_rounded),
@@ -339,54 +360,6 @@ class BottomBluetoothBar extends StatelessWidget {
                 },
                 icon: const Icon(Icons.more_vert_rounded),
               )),
-          // Disconnect button
-          IconButton(
-              onPressed: () {
-                // Show popup to confirm disconnection
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title:
-                          Text(AppLocalizations.of(context)!.disconnectDevice),
-                      content: Text(AppLocalizations.of(context)!
-                          .disconnectDeviceMessage),
-                      actions: <Widget>[
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text(AppLocalizations.of(context)!.cancel),
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            // // Disconnect from the device
-                            // String deviceID = await getConnectedDevice();
-
-                            // if (deviceID.isNotEmpty) {
-                            //   disconnectFromDevice(deviceID);
-                            //   disconnect();
-                            // } else {
-                            //   // Show error message as snackbar
-                            //   ScaffoldMessenger.of(context).showSnackBar(
-                            //     SnackBar(
-                            //       content: Text(AppLocalizations.of(context)!
-                            //           .noDevicesConnected),
-                            //     ),
-                            //   );
-                            // }
-
-                            // // ignore: use_build_context_synchronously
-                            // Navigator.of(context).pop();
-                          },
-                          child: Text(AppLocalizations.of(context)!.disconnect),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-              icon: const Icon(Icons.bluetooth_disabled_rounded)),
         ],
       ),
     );

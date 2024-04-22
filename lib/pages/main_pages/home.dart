@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:labsense/components/blinking_circle.dart';
 import 'package:labsense/components/experiment_card_preview.dart';
 import 'package:labsense/components/material_you_shape.dart';
 import 'package:labsense/pages/experiments/add_new.dart';
 import 'package:labsense/pages/main_pages/settings.dart';
+import 'package:labsense/scripts/bluetooth_com.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../connect_device/device_connection.dart';
 
@@ -18,6 +19,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   bool isConnected = false;
+  String connectedDeviceName = '';
 
   double scale = 1.0;
 
@@ -35,25 +37,21 @@ class _HomeState extends State<Home> {
     });
   }
 
-  // Check bluetooth connection
-  void checkConnection() {
-    FlutterBluetoothSerial.instance
-        .getBondedDevices()
-        .then((List<BluetoothDevice> devices) {
-      for (BluetoothDevice device in devices) {
-        if (device.isConnected) {
-          setState(() {
-            isConnected = true;
-          });
-        }
-      }
+  Future<void> updateConnection(status, name) async {
+    setState(() {
+      isConnected = status;
+      connectedDeviceName = name;
     });
   }
 
   @override
   void initState() {
     super.initState();
-    checkConnection();
+
+    // Clear shared preferences device tag
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.remove('connectedDevice');
+    });
   }
 
   @override
@@ -95,7 +93,13 @@ class _HomeState extends State<Home> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const ConnectDevice(),
+                      builder: (context) => ConnectDevice(
+                        updateConnection: (status, name) {
+                          updateConnection(status, name);
+                        },
+                        oldName: connectedDeviceName,
+                        oldStatus: isConnected,
+                      ),
                     ),
                   );
                 },
@@ -130,16 +134,28 @@ class _HomeState extends State<Home> {
                         const SizedBox(
                           height: 8.0,
                         ),
-                        Text(
-                          AppLocalizations.of(context)!.potentiostat,
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineMedium
-                              ?.copyWith(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onPrimaryContainer,
-                              ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              AppLocalizations.of(context)!.potentiostat,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineMedium
+                                  ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onPrimaryContainer,
+                                  ),
+                            ),
+                            Icon(
+                              Icons.keyboard_arrow_right_rounded,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimaryContainer,
+                              size: 24.0,
+                            ),
+                          ],
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -151,7 +167,7 @@ class _HomeState extends State<Home> {
                             const SizedBox(width: 4.0),
                             Text(
                               isConnected
-                                  ? AppLocalizations.of(context)!.connected
+                                  ? '${AppLocalizations.of(context)!.connected} ($connectedDeviceName)'
                                   : AppLocalizations.of(context)!.disconnected,
                               style: Theme.of(context)
                                   .textTheme
