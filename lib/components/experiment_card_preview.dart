@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../pages/experiments/experiment_view.dart';
 
 class ExperimentCard extends StatelessWidget {
   final int id;
@@ -23,7 +24,9 @@ class ExperimentCard extends StatelessWidget {
       elevation: 4.0,
       child: InkWell(
         onTap: () {
-          debugPrint('Card $id tapped');
+          // Navigate to the experiment view page
+          Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => ExperimentView(experimentId: id,)));
         },
         borderRadius: BorderRadius.circular(12.0),
         child: Padding(
@@ -31,39 +34,20 @@ class ExperimentCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style:
-                              Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                        ),
-                        Text(
-                          // Make the date look like "30 de janeiro de 2022"
-                          '${date.day} de Abril de ${date.year}',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
+                  Text(
+                    title,
+                    style:
+                        Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                   ),
-                  PopupMenuButton(
-                    itemBuilder: (BuildContext context) {
-                      return [
-                        const PopupMenuItem(
-                          child: Text('Edit'),
-                        ),
-                        const PopupMenuItem(
-                          child: Text('Delete'),
-                        ),
-                      ];
-                    },
-                    icon: const Icon(Icons.more_vert),
+                  Text(
+                    // Make the date look like "30 de janeiro de 2022"
+                    '${date.day} de Abril de ${date.year}',
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
               ),

@@ -54,9 +54,26 @@
   "experimentTitle": "Título do experimento",
   "experimentBriefDesc": "Breve descrição",
   "requiredField": "Preencha para continuar",
+  "lastUpdated": "Última modificação em {date}",
+  "@lastUpdated": {
+    "description": "The date the experiment was last updated",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "12/01/2020"
+      }
+    }
+  },
+  "procedures": "Procedimentos",
+  "results": "Resultados",
+  "noProcedures": "Nenhum procedimento adicionado",
 
   "cancel": "Cancelar",
   "save": "Salvar",
+  "edit": "Editar",
+  "delete": "Apagar",
+  "close": "Fechar",
+  "loading": "Carregando...",
 
   "settings": "Configurações",
   "@settings": {

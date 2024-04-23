@@ -4,6 +4,7 @@ import 'package:labsense/components/blinking_circle.dart';
 import 'package:labsense/components/experiment_card_preview.dart';
 import 'package:labsense/components/material_you_shape.dart';
 import 'package:labsense/pages/experiments/add_new.dart';
+import 'package:labsense/pages/experiments/experiments_list.dart';
 import 'package:labsense/pages/main_pages/settings.dart';
 import 'package:labsense/scripts/database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -272,7 +273,13 @@ class _HomeState extends State<Home> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) {
+                        return const ExperimentsList();
+                      },
+                    ));
+                  },
                   child: Text(AppLocalizations.of(context)!.viewAll),
                 ),
               ],

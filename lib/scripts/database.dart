@@ -16,6 +16,9 @@ Future<Database> openMyDatabase() async {
       // steps inside it.
       await db.execute(
           'CREATE TABLE procedures(id INTEGER PRIMARY KEY, title TEXT, brief_description TEXT)');
+      // Table for default procedures for the app
+      await db.execute(
+          'CREATE TABLE default_procedures(id INTEGER PRIMARY KEY, title TEXT, brief_description TEXT)');
     },
   );
   return database;
