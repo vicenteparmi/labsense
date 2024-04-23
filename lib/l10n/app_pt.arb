@@ -50,6 +50,7 @@
     "description": "Cria um novo experimento"
   },
   "createNewExperiment": "Criar novo experimento",
+  "createNewModel": "Criar novo modelo",
   "essentialInformation": "Informações essenciais",
   "experimentTitle": "Título do experimento",
   "experimentBriefDesc": "Breve descrição",

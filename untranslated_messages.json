@@ -19,6 +19,7 @@
     "viewAll",
     "newExperiment",
     "createNewExperiment",
+    "createNewModel",
     "essentialInformation",
     "experimentTitle",
     "experimentBriefDesc",

@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:labsense/components/blinking_circle.dart';
 import 'package:labsense/components/experiment_card_preview.dart';
 import 'package:labsense/components/material_you_shape.dart';
+import 'package:labsense/pages/experiment_models/create_new_model.dart';
 import 'package:labsense/pages/experiments/add_new.dart';
 import 'package:labsense/pages/experiments/experiments_list.dart';
 import 'package:labsense/pages/main_pages/settings.dart';
@@ -60,9 +61,41 @@ class _HomeState extends State<Home> {
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) {
-              return const CreateExperiment();
-            }));
+            showModalBottomSheet(
+                context: context,
+                showDragHandle: true,
+                builder: (context) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      ListTile(
+                        leading: const Icon(Icons.science_rounded),
+                        title: Text(
+                            AppLocalizations.of(context)!.createNewExperiment),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                            return const CreateExperiment();
+                          }));
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.grid_view_rounded),
+                        title:
+                            Text(AppLocalizations.of(context)!.createNewModel),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                            return const CreateModel();
+                          }));
+                        },
+                      ),
+                      const SizedBox(height: 16.0)
+                    ],
+                  );
+                });
           },
           label: Text(AppLocalizations.of(context)!.newExperiment),
           icon: const Icon(Icons.add)),

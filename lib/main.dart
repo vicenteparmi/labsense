@@ -36,6 +36,6 @@ class MyApp extends StatelessWidget {
           Locale('pt'), // Portuguese
           Locale('en'), // English
         ],
-        home: const Home());
+        home: const Scaffold(body: Home()));
   }
 }
