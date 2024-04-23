@@ -44,6 +44,7 @@ class _CreateExperimentState extends State<CreateExperiment> {
                                 AppLocalizations.of(context)!.experimentTitle),
                             icon: const Icon(Icons.title_rounded),
                             border: const OutlineInputBorder()),
+                        textCapitalization: TextCapitalization.sentences,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return AppLocalizations.of(context)!.requiredField;
@@ -61,6 +62,7 @@ class _CreateExperimentState extends State<CreateExperiment> {
                           border: const OutlineInputBorder(),
                           alignLabelWithHint: true,
                         ),
+                        textCapitalization: TextCapitalization.sentences,
                         maxLines: 3,
                         validator: (value) {
                           if (value == null || value.isEmpty) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:labsense/pages/main_pages/home.dart';
 import 'package:labsense/scripts/database.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -57,6 +58,7 @@ class _ExperimentViewState extends State<ExperimentView> {
       );
     } else {
       return _ExperimentViewContent(
+        experimentId: widget.experimentId,
         title: experiment['title'] ?? '',
         description: experiment['brief_description'] ?? '',
         lastUpdated: experiment['last_updated'] ?? '',
@@ -68,6 +70,7 @@ class _ExperimentViewState extends State<ExperimentView> {
 }
 
 class _ExperimentViewContent extends StatelessWidget {
+  final int experimentId;
   final String title;
   final String description;
   final String lastUpdated;
@@ -75,7 +78,8 @@ class _ExperimentViewContent extends StatelessWidget {
   final List<Map<String, dynamic>> steps;
 
   const _ExperimentViewContent(
-      {required this.title,
+      {required this.experimentId,
+      required this.title,
       required this.description,
       required this.lastUpdated,
       required this.createdTime,
@@ -132,6 +136,46 @@ class _ExperimentViewContent extends StatelessWidget {
               PopupMenuItem(
                 value: 2,
                 child: Text(AppLocalizations.of(context)!.delete),
+                onTap: () {
+                  // Delete this record from the database
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title:
+                            Text(AppLocalizations.of(context)!.confirmDelete),
+                        content: Text(AppLocalizations.of(context)!
+                            .confirmExperimentDelete),
+                        actions: <Widget>[
+                          TextButton(
+                            child: Text(AppLocalizations.of(context)!.cancel),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          TextButton(
+                            child: Text(AppLocalizations.of(context)!.delete),
+                            onPressed: () {
+                              openMyDatabase().then((value) => value.delete(
+                                    'experiments',
+                                    where: 'id = ?',
+                                    whereArgs: [experimentId.toString()],
+                                  ));
+                              Navigator.of(context).pop();
+                              // Push and remove all previous routes
+                              Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(
+                                  builder: (context) => const Home(),
+                                ),
+                                (route) => false,
+                              );
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
               ),
             ],
             onSelected: (value) {

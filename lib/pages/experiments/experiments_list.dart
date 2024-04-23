@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:labsense/components/nothing_found_card.dart';
 import 'package:sqflite/sqflite.dart';
 
-import '../../components/experiment_card_preview.dart';
+import '../../components/experiment_card.dart';
 import '../../scripts/database.dart';
+import 'create_new_experiment.dart';
 
 class ExperimentsList extends StatelessWidget {
   const ExperimentsList({super.key});
@@ -19,6 +21,19 @@ class ExperimentsList extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.experiments),
+        actions: [
+          IconButton(
+            icon:
+                Icon(Icons.add, color: Theme.of(context).colorScheme.secondary),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (context) => const CreateExperiment()),
+              );
+            },
+            tooltip: AppLocalizations.of(context)!.createNewExperiment,
+          ),
+        ],
       ),
       body: FutureBuilder(
         future: queryExperiments(),
@@ -28,19 +43,26 @@ class ExperimentsList extends StatelessWidget {
               child: CircularProgressIndicator(),
             );
           } else {
-            return ListView.builder(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-              itemCount: snapshot.data?.length,
-              itemBuilder: (context, index) {
-                return ExperimentCard(
-                  id: snapshot.data![index]['id'],
-                  title: snapshot.data![index]['title'],
-                  date: DateTime.parse(snapshot.data![index]['created_time']),
-                  description: snapshot.data![index]['brief_description'],
-                );
-              },
-            );
+            if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+              return ListView.builder(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                itemCount: snapshot.data?.length,
+                itemBuilder: (context, index) {
+                  return ExperimentCard(
+                    id: snapshot.data![index]['id'],
+                    title: snapshot.data![index]['title'],
+                    date: DateTime.parse(snapshot.data![index]['created_time']),
+                    description: snapshot.data![index]['brief_description'],
+                  );
+                },
+              );
+            } else {
+              return const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: NothingFound(),
+              );
+            }
           }
         },
       ),

@@ -25,8 +25,10 @@ class ExperimentCard extends StatelessWidget {
       child: InkWell(
         onTap: () {
           // Navigate to the experiment view page
-          Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => ExperimentView(experimentId: id,)));
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => ExperimentView(
+                    experimentId: id,
+                  )));
         },
         borderRadius: BorderRadius.circular(12.0),
         child: Padding(
@@ -39,10 +41,9 @@ class ExperimentCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style:
-                        Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   Text(
                     // Make the date look like "30 de janeiro de 2022"

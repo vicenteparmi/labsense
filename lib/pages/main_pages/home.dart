@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:labsense/components/blinking_circle.dart';
-import 'package:labsense/components/experiment_card_preview.dart';
+import 'package:labsense/components/experiment_card.dart';
 import 'package:labsense/components/material_you_shape.dart';
+import 'package:labsense/components/nothing_found_card.dart';
 import 'package:labsense/pages/experiment_models/create_new_model.dart';
-import 'package:labsense/pages/experiments/add_new.dart';
+import 'package:labsense/pages/experiments/create_new_experiment.dart';
 import 'package:labsense/pages/experiments/experiments_list.dart';
 import 'package:labsense/pages/main_pages/settings.dart';
 import 'package:labsense/scripts/database.dart';
@@ -77,7 +78,7 @@ class _HomeState extends State<Home> {
                           Navigator.push(context,
                               MaterialPageRoute(builder: (context) {
                             return const CreateExperiment();
-                          }));
+                          })).then((value) => setState(() {}));
                         },
                       ),
                       ListTile(
@@ -243,10 +244,8 @@ class _HomeState extends State<Home> {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.only(
-                left: 16.0,
-                right: 16.0,
-                bottom: 16.0,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
               ),
               child: Row(
                 children: [
@@ -261,6 +260,17 @@ class _HomeState extends State<Home> {
                           fontWeight: FontWeight.bold,
                         ),
                   ),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) {
+                          return const ExperimentsList();
+                        },
+                      ));
+                    },
+                    child: Text(AppLocalizations.of(context)!.viewAll),
+                  ),
                 ],
               ),
             ),
@@ -274,19 +284,27 @@ class _HomeState extends State<Home> {
                 AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SliverToBoxAdapter(
-                    child: CircularProgressIndicator());
+                    child: SizedBox(
+                        height: 24.0,
+                        width: 24.0,
+                        child: CircularProgressIndicator()));
               } else if (snapshot.hasError) {
                 return SliverToBoxAdapter(
                     child: Text('Error: ${snapshot.error}'));
+              } else if (snapshot.data!.isEmpty) {
+                return const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    child: NothingFound(),
+                  ),
+                );
               } else {
                 return SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (BuildContext context, int index) {
                       Map<String, dynamic> experiment = snapshot.data![index];
                       return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: ExperimentCard(
                           id: experiment['id'],
                           title: experiment['title'],
@@ -302,29 +320,8 @@ class _HomeState extends State<Home> {
             },
           ),
           SliverToBoxAdapter(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) {
-                        return const ExperimentsList();
-                      },
-                    ));
-                  },
-                  child: Text(AppLocalizations.of(context)!.viewAll),
-                ),
-              ],
-            ),
-          ),
-          SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.only(
-                left: 16.0,
-                right: 16.0,
-                bottom: 16.0,
-              ),
+              padding: const EdgeInsets.all(16.0),
               child: Row(
                 children: [
                   Icon(
@@ -341,6 +338,50 @@ class _HomeState extends State<Home> {
                 ],
               ),
             ),
+          ),
+          FutureBuilder<List<Map<String, dynamic>>>(
+            future: openMyDatabase().then((value) {
+              return value.query('default_procedures',
+                  orderBy: 'title DESC', limit: 3);
+            }),
+            builder: (BuildContext context,
+                AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SliverToBoxAdapter(
+                    child: SizedBox(
+                        height: 24.0,
+                        width: 24.0,
+                        child: CircularProgressIndicator()));
+              } else if (snapshot.hasError) {
+                return SliverToBoxAdapter(
+                    child: Text('Error: ${snapshot.error}'));
+              } else if (snapshot.data!.isEmpty) {
+                return const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    child: NothingFound(),
+                  ),
+                );
+              } else {
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (BuildContext context, int index) {
+                      Map<String, dynamic> experiment = snapshot.data![index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: ExperimentCard(
+                          id: experiment['id'],
+                          title: experiment['title'],
+                          date: DateTime.parse(experiment['created_time']),
+                          description: experiment['brief_description'],
+                        ),
+                      );
+                    },
+                    childCount: snapshot.data!.length,
+                  ),
+                );
+              }
+            },
           ),
         ],
       ),
