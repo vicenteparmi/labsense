@@ -47,6 +47,8 @@
     "estimatedDuration",
     "potentialInterval",
     "chronoamperometry",
+    "howToCyclicVoltammetry",
+    "cyclicVoltammetryExplanation",
     "cancel",
     "save",
     "edit",

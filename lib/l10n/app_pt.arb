@@ -49,8 +49,8 @@
   "@newExpeiment": {
     "description": "Cria um novo experimento"
   },
-  "createNewExperiment": "Criar novo experimento",
-  "createNewModel": "Criar novo modelo",
+  "createNewExperiment": "Novo experimento",
+  "createNewModel": "Novo modelo",
   "nothingFound": "Nada encontrado",
   "nothingFoundSubtitle": "Crie um item para começar",
   "essentialInformation": "Informações essenciais",
@@ -88,6 +88,8 @@
   "estimatedDuration": "Duração estimada",
   "potentialInterval": "Intervalo de potencial",
   "chronoamperometry": "Cronoamperometria",
+  "howToCyclicVoltammetry": "O que é a voltametria cíclica?",
+  "cyclicVoltammetryExplanation": "A voltametria cíclica é uma técnica poderosa em eletroquímica usada para investigar os processos de transferência de elétrons de uma molécula. Ele funciona aplicando uma tensão gradualmente crescente a um eletrodo de trabalho mergulhado em uma solução, revertendo a tensão e trazendo-a de volta ao ponto inicial. Enquanto isso, a resposta atual é medida. Isso cria um gráfico característico denominado voltamograma cíclico, que revela informações sobre a capacidade da molécula de ganhar ou perder elétrons (atividade redox), a facilidade dessas transferências de elétrons e os níveis de energia envolvidos.",
 
   "cancel": "Cancelar",
   "save": "Salvar",

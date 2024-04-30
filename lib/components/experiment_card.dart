@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../pages/experiments/experiment_view.dart';
 
 class ExperimentCard extends StatelessWidget {
@@ -63,6 +64,16 @@ class ExperimentCard extends StatelessWidget {
           ),
         ),
       ),
-    );
+    )
+        .animate()
+        .fadeIn(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            delay: Duration(milliseconds: 100 * id))
+        .scale(
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.easeOut,
+            begin: const Offset(0.95, 0.95),
+            end: const Offset(1.0, 1.0));
   }
 }
