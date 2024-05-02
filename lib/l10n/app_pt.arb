@@ -67,12 +67,14 @@
       }
     }
   },
+  "creationDate": "Data de criação",
   "procedures": "Procedimentos",
   "experimentData": "Dados do experimento",
   "experimentType": "Tipo de experimento",
   "results": "Resultados",
   "noProcedures": "Nenhum procedimento adicionado",
   "confirmExperimentDelete": "Desenha excluir o experimento? Esta ação não pode ser desfeita.",
+  "clickToAlternate": "Clique para alternar",
 
   "cyclicVoltammetry": "Voltametria cíclica",
   "linearSweepVoltammetry": "Voltametria de varredura linear",
