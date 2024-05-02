@@ -75,6 +75,8 @@
   "noProcedures": "Nenhum procedimento adicionado",
   "confirmExperimentDelete": "Desenha excluir o experimento? Esta ação não pode ser desfeita.",
   "clickToAlternate": "Clique para alternar",
+  "customization": "Personalização",
+  "experimentIcon": "Ícone do experimento",
 
   "cyclicVoltammetry": "Voltametria cíclica",
   "linearSweepVoltammetry": "Voltametria de varredura linear",

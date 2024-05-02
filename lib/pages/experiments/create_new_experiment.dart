@@ -21,6 +21,31 @@ class _CreateExperimentState extends State<CreateExperiment> {
   // Form key
   final _formKey = GlobalKey<FormState>();
 
+  // List of icons to choose from
+  final List<IconData> icons = [
+    Icons.science_rounded,
+    Icons.biotech_rounded,
+    Icons.microwave_rounded,
+    Icons.lightbulb_rounded,
+    Icons.bolt_rounded,
+    Icons.bubble_chart_rounded,
+    Icons.bug_report_rounded,
+    Icons.water_drop_rounded,
+    Icons.air_rounded,
+    Icons.thermostat_rounded,
+    Icons.waves_rounded,
+    Icons.wb_sunny_rounded,
+    Icons.favorite_rounded,
+    Icons.star_rounded,
+    Icons.support,
+    Icons.emoji_objects_rounded,
+    Icons.emoji_nature_rounded,
+    Icons.emoji_food_beverage_rounded,
+  ];
+
+  // Selected icon
+  IconData selectedIcon = Icons.science_rounded;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,7 +57,7 @@ class _CreateExperimentState extends State<CreateExperiment> {
             flexibleSpace: FlexibleSpaceBar(
               title: Text(AppLocalizations.of(context)!.createNewExperiment,
                   style: Theme.of(context).textTheme.titleLarge),
-              background: Icon(Icons.science_rounded,
+              background: Icon(selectedIcon,
                   size: 92.0, color: Theme.of(context).colorScheme.primary),
               collapseMode: CollapseMode.pin,
               centerTitle: true,
@@ -91,6 +116,52 @@ class _CreateExperimentState extends State<CreateExperiment> {
                               }
                               return null;
                             },
+                          ),
+                          const SizedBox(height: 24.0),
+                          Text(AppLocalizations.of(context)!.customization,
+                              style: Theme.of(context).textTheme.titleMedium),
+                          const SizedBox(height: 12.0),
+                          Text(AppLocalizations.of(context)!.experimentIcon,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium!
+                                  .copyWith(fontWeight: FontWeight.normal)),
+                          const SizedBox(height: 8.0),
+                          // Scrollable row to select the experiment icon
+                          SizedBox(
+                            height: 60.0, // Adjust this value as needed
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: icons.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                return Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: CircleAvatar(
+                                    backgroundColor: selectedIcon ==
+                                            icons[index]
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Colors.transparent,
+                                    radius: 28.0,
+                                    child: IconButton(
+                                      icon: Icon(icons[index],
+                                          color: selectedIcon == icons[index]
+                                              ? Theme.of(context)
+                                                  .colorScheme
+                                                  .onPrimary
+                                              : Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurfaceVariant),
+                                      iconSize: 32.0,
+                                      onPressed: () {
+                                        setState(() {
+                                          selectedIcon = icons[index];
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                           ButtonBar(
                             children: [

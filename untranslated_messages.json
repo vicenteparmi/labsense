@@ -35,6 +35,8 @@
     "noProcedures",
     "confirmExperimentDelete",
     "clickToAlternate",
+    "customization",
+    "experimentIcon",
     "cyclicVoltammetry",
     "linearSweepVoltammetry",
     "initialPotential",
