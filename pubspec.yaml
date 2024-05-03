@@ -23,6 +23,7 @@ dependencies:
   step_tracker: ^0.0.5
   flutter_svg: ^2.0.10+1
   flutter_animate: ^4.5.0
+  reorderables: ^0.6.0
 
 dev_dependencies:
   flutter_test:

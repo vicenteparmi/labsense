@@ -77,6 +77,14 @@
   "clickToAlternate": "Clique para alternar",
   "customization": "Personalização",
   "experimentIcon": "Ícone do experimento",
+  "experimentProcedures": "Procedimentos do experimento",
+  "addProcedure": "Adicionar procedimento",
+  "addProcedureInfo": "Você pode adicionar novos modelos de experimentos a partir da tela de início",
+  "dragToReorder": "Segure e arraste para reordenar",
+
+  "discardChanges": "Descartar alterações",
+  "discardChangesInfo": "Você tem certeza que deseja descartar as alterações?",
+  "discard": "Descartar",
 
   "cyclicVoltammetry": "Voltametria cíclica",
   "linearSweepVoltammetry": "Voltametria de varredura linear",
