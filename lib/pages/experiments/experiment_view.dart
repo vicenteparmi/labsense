@@ -4,6 +4,7 @@ import 'package:labsense/pages/main_pages/home.dart';
 import 'package:labsense/scripts/database.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:step_tracker/step_tracker.dart';
 
 class ExperimentView extends StatefulWidget {
   final int experimentId;
@@ -20,7 +21,8 @@ class _ExperimentViewState extends State<ExperimentView> {
     'description': '',
     'last_updated': '',
     'created_time': '',
-    'steps': [],
+    'icon': '',
+    'procedures': [],
   };
 
   Future<void> queryExperimentData() async {
@@ -34,6 +36,23 @@ class _ExperimentViewState extends State<ExperimentView> {
     if (result.isNotEmpty) {
       setState(() {
         experiment = result.first;
+      });
+    }
+
+    // Query the associated procedures from the 'custom_procedures' table
+    List<Map<String, dynamic>> procedureResult = await db.query(
+      'custom_procedures',
+      where: 'experiment_id = ?',
+      whereArgs: [widget.experimentId.toString()],
+      orderBy:
+          'experiment_order ASC', // Order the results by the 'order' column
+    );
+
+    if (procedureResult.isNotEmpty) {
+      setState(() {
+        experiment = Map<String, dynamic>.from(experiment);
+        experiment['procedures'] =
+            List<Map<String, dynamic>>.from(procedureResult);
       });
     }
   }
@@ -62,7 +81,9 @@ class _ExperimentViewState extends State<ExperimentView> {
         description: experiment['brief_description'] ?? '',
         lastUpdated: experiment['last_updated'] ?? '',
         createdTime: experiment['created_time'] ?? '',
-        steps: experiment['steps'] ?? [],
+        icon: IconData(int.parse(experiment['icon'] ?? '0xe5c4'),
+            fontFamily: 'MaterialIcons'),
+        steps: experiment['procedures'] ?? [],
       );
     }
   }
@@ -74,6 +95,7 @@ class _ExperimentViewContent extends StatelessWidget {
   final String description;
   final String lastUpdated;
   final String createdTime;
+  final IconData icon;
   final List<Map<String, dynamic>> steps;
 
   const _ExperimentViewContent(
@@ -82,82 +104,86 @@ class _ExperimentViewContent extends StatelessWidget {
       required this.description,
       required this.lastUpdated,
       required this.createdTime,
+      required this.icon,
       required this.steps});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Navigate to the experiment procedure page
+        },
+        child: const Icon(Icons.play_arrow),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          children: [
+            IconButton(
+                onPressed: () {
+                  // Delete this record from the database
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title:
+                            Text(AppLocalizations.of(context)!.confirmDelete),
+                        content: Text(AppLocalizations.of(context)!
+                            .confirmExperimentDelete),
+                        actions: <Widget>[
+                          TextButton(
+                            child: Text(AppLocalizations.of(context)!.cancel),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          TextButton(
+                            style: TextButton.styleFrom(
+                                foregroundColor:
+                                    Theme.of(context).colorScheme.onError,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.error),
+                            child: Text(AppLocalizations.of(context)!.delete),
+                            onPressed: () {
+                              openMyDatabase().then((value) => value.delete(
+                                    'experiments',
+                                    where: 'id = ?',
+                                    whereArgs: [experimentId.toString()],
+                                  ));
+                              Navigator.of(context).pop();
+                              // Push and remove all previous routes
+                              Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(
+                                  builder: (context) => const Home(),
+                                ),
+                                (route) => false,
+                              );
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                icon: const Icon(Icons.delete_forever_rounded)),
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(Icons.edit_rounded),
+            ),
+          ],
+        ),
+      ),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             pinned: true,
             expandedHeight: 225.0,
-            actions: [
-              PopupMenuButton<int>(
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 1,
-                    child: Text(AppLocalizations.of(context)!.edit),
-                  ),
-                  PopupMenuItem(
-                    value: 2,
-                    child: Text(AppLocalizations.of(context)!.delete),
-                    onTap: () {
-                      // Delete this record from the database
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Text(
-                                AppLocalizations.of(context)!.confirmDelete),
-                            content: Text(AppLocalizations.of(context)!
-                                .confirmExperimentDelete),
-                            actions: <Widget>[
-                              TextButton(
-                                child:
-                                    Text(AppLocalizations.of(context)!.cancel),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                              ),
-                              TextButton(
-                                child:
-                                    Text(AppLocalizations.of(context)!.delete),
-                                onPressed: () {
-                                  openMyDatabase().then((value) => value.delete(
-                                        'experiments',
-                                        where: 'id = ?',
-                                        whereArgs: [experimentId.toString()],
-                                      ));
-                                  Navigator.of(context).pop();
-                                  // Push and remove all previous routes
-                                  Navigator.of(context).pushAndRemoveUntil(
-                                    MaterialPageRoute(
-                                      builder: (context) => const Home(),
-                                    ),
-                                    (route) => false,
-                                  );
-                                },
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ],
-                onSelected: (value) {
-                  if (value == 1) {
-                    // Navigate to the edit page
-                  } else if (value == 2) {
-                    // Delete the experiment
-                  }
-                },
-              ),
-            ],
             flexibleSpace: FlexibleSpaceBar(
               title: RichText(
                   textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   text: TextSpan(
                     children: [
                       TextSpan(
@@ -178,12 +204,12 @@ class _ExperimentViewContent extends StatelessWidget {
                     ],
                   )),
               background: Padding(
-                padding: const EdgeInsets.all(80.0),
+                padding: const EdgeInsets.all(92.0),
                 child: CircleAvatar(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   radius: 48.0,
                   child: Icon(
-                    Icons.science_outlined,
+                    icon,
                     size: 48.0, // Reduced size
                     color: Theme.of(context).colorScheme.onPrimary,
                   ),
@@ -215,10 +241,13 @@ class _ExperimentViewContent extends StatelessWidget {
                   childrenPadding: const EdgeInsets.only(
                       left: 24.0, right: 24.0, bottom: 24.0),
                   children: <Widget>[
-                    Text(
-                      description,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                      textAlign: TextAlign.justify,
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: Text(
+                        description,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                        textAlign: TextAlign.justify,
+                      ),
                     ),
                   ],
                 ),
@@ -237,47 +266,38 @@ class _ExperimentViewContent extends StatelessWidget {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(24.0),
               child: Text(
                 AppLocalizations.of(context)!.procedures,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
             ),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            sliver: SliverGrid(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount:
-                    (MediaQuery.of(context).orientation == Orientation.portrait)
-                        ? 2
-                        : 4,
-                crossAxisSpacing: 0,
-                mainAxisSpacing: 0,
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: StepTracker(
+                dotSize: 15.0,
+                selectedColor: Theme.of(context).colorScheme.primary,
+                steps: [
+                  for (var step in steps)
+                    Steps(
+                      title: Text(step['title']),
+                      description: step['brief_description'].length > 120
+                          ? step['brief_description'].substring(0, 120) + '...'
+                          : step['brief_description'],
+                      state: TrackerState.complete,
+                    )
+                ],
               ),
-              delegate: SliverChildBuilderDelegate(
-                (BuildContext context, int index) {
-                  return Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Result $index',
-                            style: Theme.of(context).textTheme.titleSmall,
-                          ),
-                          const SizedBox(height: 8.0),
-                          Text(
-                            'Result description',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-                childCount: 3,
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Text(
+                AppLocalizations.of(context)!.results,
+                style: Theme.of(context).textTheme.titleLarge,
               ),
             ),
           ),

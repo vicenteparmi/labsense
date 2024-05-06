@@ -140,10 +140,11 @@ class _CreateModelState extends State<CreateModel> {
                           TextFormField(
                             controller: _titleController,
                             decoration: InputDecoration(
-                                label: Text(AppLocalizations.of(context)!
-                                    .experimentTitle),
+                                label: Text(
+                                    AppLocalizations.of(context)!.modelTitle),
                                 icon: const Icon(Icons.title_rounded),
                                 border: const OutlineInputBorder()),
+                            textInputAction: TextInputAction.next,
                             textCapitalization: TextCapitalization.sentences,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -319,6 +320,7 @@ class _CreateModelState extends State<CreateModel> {
                                         Icons.swipe_right_alt_rounded),
                                     border: const OutlineInputBorder(),
                                   ),
+                                  textInputAction: TextInputAction.next,
                                   keyboardType: TextInputType.number,
                                   controller: _initialPotentialController,
                                   validator: (value) {
@@ -345,6 +347,7 @@ class _CreateModelState extends State<CreateModel> {
                                         Icons.swipe_left_alt_rounded),
                                     border: const OutlineInputBorder(),
                                   ),
+                                  textInputAction: TextInputAction.next,
                                   keyboardType: TextInputType.number,
                                   controller: _finalPotentialController,
                                   validator: (value) {
@@ -370,6 +373,7 @@ class _CreateModelState extends State<CreateModel> {
                                     icon: const Icon(Icons.speed_rounded),
                                     border: const OutlineInputBorder(),
                                   ),
+                                  textInputAction: TextInputAction.next,
                                   keyboardType: TextInputType.number,
                                   controller: _scanRateController,
                                   validator: (value) {
@@ -396,6 +400,7 @@ class _CreateModelState extends State<CreateModel> {
                                     icon: const Icon(Icons.loop_rounded),
                                     border: const OutlineInputBorder(),
                                   ),
+                                  textInputAction: TextInputAction.done,
                                   keyboardType: TextInputType.number,
                                   controller: _cycleCountController,
                                   validator: (value) {

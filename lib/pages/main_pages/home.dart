@@ -109,7 +109,7 @@ class _HomeState extends State<Home> {
                           Navigator.push(context,
                               MaterialPageRoute(builder: (context) {
                             return const CreateModel();
-                          }));
+                          })).then((value) => setState(() {}));
                         },
                       ),
                       const SizedBox(height: 16.0)

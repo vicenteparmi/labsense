@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:labsense/pages/experiments/edit_custom_procedure.dart';
 import 'package:labsense/scripts/database.dart';
 import 'package:reorderables/reorderables.dart';
 import 'package:sqflite/sqflite.dart';
@@ -260,6 +261,7 @@ class _CreateExperimentState extends State<CreateExperiment> {
                                         .experimentTitle),
                                     icon: const Icon(Icons.title_rounded),
                                     border: const OutlineInputBorder()),
+                                textInputAction: TextInputAction.next,
                                 textCapitalization:
                                     TextCapitalization.sentences,
                                 validator: (value) {
@@ -308,42 +310,46 @@ class _CreateExperimentState extends State<CreateExperiment> {
                         // Scrollable row to select the experiment icon
                         SizedBox(
                           height: 60.0, // Adjust this value as needed
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: icons.length + 1,
-                            itemBuilder: (BuildContext context, int index) {
-                              if (index == 0) {
-                                return const SizedBox(width: 24.0);
-                              } else {
-                                return Padding(
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: CircleAvatar(
-                                    backgroundColor: selectedIcon ==
-                                            icons[index - 1]
-                                        ? Theme.of(context).colorScheme.primary
-                                        : Colors.transparent,
-                                    radius: 28.0,
-                                    child: IconButton(
-                                      icon: Icon(icons[index - 1],
-                                          color:
-                                              selectedIcon == icons[index - 1]
-                                                  ? Theme.of(context)
-                                                      .colorScheme
-                                                      .onPrimary
-                                                  : Theme.of(context)
-                                                      .colorScheme
-                                                      .onSurfaceVariant),
-                                      iconSize: 32.0,
-                                      onPressed: () {
-                                        setState(() {
-                                          selectedIcon = icons[index - 1];
-                                        });
-                                      },
+                          child: Scrollbar(
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: icons.length + 1,
+                              itemBuilder: (BuildContext context, int index) {
+                                if (index == 0) {
+                                  return const SizedBox(width: 24.0);
+                                } else {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(2.0),
+                                    child: CircleAvatar(
+                                      backgroundColor:
+                                          selectedIcon == icons[index - 1]
+                                              ? Theme.of(context)
+                                                  .colorScheme
+                                                  .primary
+                                              : Colors.transparent,
+                                      radius: 28.0,
+                                      child: IconButton(
+                                        icon: Icon(icons[index - 1],
+                                            color:
+                                                selectedIcon == icons[index - 1]
+                                                    ? Theme.of(context)
+                                                        .colorScheme
+                                                        .onPrimary
+                                                    : Theme.of(context)
+                                                        .colorScheme
+                                                        .onSurfaceVariant),
+                                        iconSize: 32.0,
+                                        onPressed: () {
+                                          setState(() {
+                                            selectedIcon = icons[index - 1];
+                                          });
+                                        },
+                                      ),
                                     ),
-                                  ),
-                                );
-                              }
-                            },
+                                  );
+                                }
+                              },
+                            ),
                           ),
                         ),
                         const SizedBox(height: 24.0),
@@ -393,7 +399,32 @@ class _CreateExperimentState extends State<CreateExperiment> {
                   (index) => Card(
                     margin: EdgeInsets.zero,
                     child: InkWell(
-                      onTap: () {},
+                      onTap: () {
+                        // Open modal to change parameters
+                        showModalBottomSheet(
+                          context: context,
+                          showDragHandle: true,
+                          useSafeArea: true,
+                          isScrollControlled: true,
+                          builder: (BuildContext context) {
+                            return EditCustomProcedure(
+                              procedure: procedures[index],
+                              index: index,
+                              removeThis: (int index) {
+                                setState(() {
+                                  procedures.removeAt(index);
+                                });
+                              },
+                              updateThis:
+                                  (Map<String, Object?> updatedProcedure) {
+                                setState(() {
+                                  procedures[index] = updatedProcedure;
+                                });
+                              },
+                            );
+                          },
+                        );
+                      },
                       borderRadius: BorderRadius.circular(8.0),
                       child: SizedBox(
                         width: MediaQuery.of(context).size.width / 2 - 32.0,
@@ -463,7 +494,8 @@ class _CreateExperimentState extends State<CreateExperiment> {
                   FilledButton(
                     onPressed: () {
                       // Validate form
-                      if (_formKey.currentState!.validate()) {
+                      if (_formKey.currentState!.validate() &&
+                          procedures.isNotEmpty) {
                         // Save the experiment
                         saveExperiment(
                             _titleController.text,
@@ -471,6 +503,33 @@ class _CreateExperimentState extends State<CreateExperiment> {
                             selectedIcon,
                             procedures);
                         Navigator.pop(context);
+                      } else if (procedures.isEmpty &&
+                          _formKey.currentState!.validate()) {
+                        HapticFeedback.mediumImpact();
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          duration: const Duration(seconds: 3),
+                          content: Text(
+                            AppLocalizations.of(context)!
+                                .addAtLeastOneProcedure,
+                            style: TextStyle(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12.0, vertical: 8.0),
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primaryContainer,
+                          action: SnackBarAction(
+                            label: AppLocalizations.of(context)!.add,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
+                            textColor: Theme.of(context).colorScheme.onPrimary,
+                            onPressed: () {
+                              _openAddProcedureDialog(context);
+                            },
+                          ),
+                        ));
                       } else {
                         HapticFeedback.mediumImpact();
                       }
@@ -503,10 +562,13 @@ Future<void> saveExperiment(String title, String briefDescription,
       });
 
       // Create procedures list at "custom_procedures"
-      for (var procedure in procedures) {
+      for (var i = 0; i < procedures.length; i++) {
+        var procedure = Map<String, Object?>.from(procedures[i]);
+        procedure.remove('id');
         await txn.insert('custom_procedures', {
           ...procedure,
           'experiment_id': experimentId,
+          'experiment_order': i,
         });
       }
     } catch (e) {

@@ -29,7 +29,7 @@ class ExperimentsList extends StatelessWidget {
         title: Text(
           query == 'experiments'
               ? AppLocalizations.of(context)!.experiments
-              : AppLocalizations.of(context)!.procedures,
+              : AppLocalizations.of(context)!.models,
         ),
         actions: [
           IconButton(

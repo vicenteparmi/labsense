@@ -28,7 +28,7 @@ Future<Database> openMyDatabase() async {
       ''');
       // Table for default procedures for the app
       await db.execute(
-          'CREATE TABLE custom_procedures(id INTEGER PRIMARY KEY, title TEXT, brief_description TEXT)');
+          'CREATE TABLE custom_procedures (id INTEGER PRIMARY KEY, title TEXT, brief_description TEXT, model_type TEXT, initial_potential TEXT, final_potential TEXT, scan_rate TEXT, cycle_count TEXT, sweep_direction INTEGER, experiment_id INTEGER, experiment_order INTEGER)');
     },
   );
   return database;
