@@ -11,14 +11,19 @@ import '../../components/experiment_card.dart';
 import '../../scripts/database.dart';
 import 'create_new_experiment.dart';
 
-class ExperimentsList extends StatelessWidget {
+class ExperimentsList extends StatefulWidget {
   final String query;
 
   const ExperimentsList({super.key, required this.query});
 
+  @override
+  State<ExperimentsList> createState() => _ExperimentsListState();
+}
+
+class _ExperimentsListState extends State<ExperimentsList> {
   Future<List<Map<String, dynamic>>> queryExperiments() async {
     Database db = await openMyDatabase();
-    List<Map<String, dynamic>> result = await db.query(query);
+    List<Map<String, dynamic>> result = await db.query(widget.query);
     return result;
   }
 
@@ -27,7 +32,7 @@ class ExperimentsList extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          query == 'experiments'
+          widget.query == 'experiments'
               ? AppLocalizations.of(context)!.experiments
               : AppLocalizations.of(context)!.models,
         ),
@@ -37,7 +42,7 @@ class ExperimentsList extends StatelessWidget {
                 Icon(Icons.add, color: Theme.of(context).colorScheme.secondary),
             onPressed: () {
               Navigator.of(context).push(
-                query == 'experiments'
+                widget.query == 'experiments'
                     ? MaterialPageRoute(
                         builder: (context) => const CreateExperiment(),
                       )
@@ -46,53 +51,58 @@ class ExperimentsList extends StatelessWidget {
                       ),
               );
             },
-            tooltip: query == 'experiments'
+            tooltip: widget.query == 'experiments'
                 ? AppLocalizations.of(context)!.createNewExperiment
                 : AppLocalizations.of(context)!.createNewModel,
           ),
         ],
       ),
-      body: FutureBuilder(
-        future: queryExperiments(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else {
-            if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-              return ListView.builder(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                itemCount: snapshot.data?.length,
-                itemBuilder: (context, index) {
-                  if (query == 'experiments')
-                    return ExperimentCard(
-                      id: snapshot.data![index]['id'],
-                      title: snapshot.data![index]['title'],
-                      date:
-                          DateTime.parse(snapshot.data![index]['created_time']),
-                      description: snapshot.data![index]['brief_description'],
-                    );
-                  else if (query == 'procedures')
-                    return ModelCard(
-                      id: snapshot.data![index]['id'],
-                      title: snapshot.data![index]['title'],
-                      description: snapshot.data![index]['brief_description'],
-                      type: snapshot.data![index]['model_type'],
-                    );
-                  else
-                    return const SizedBox();
-                },
+      body: RefreshIndicator(
+        onRefresh: () async {
+          setState(() {});
+        },
+        child: FutureBuilder(
+          future: queryExperiments(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(),
               );
             } else {
-              return const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: NothingFound(),
-              );
+              if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 8.0, horizontal: 16.0),
+                  itemCount: snapshot.data?.length,
+                  itemBuilder: (context, index) {
+                    if (widget.query == 'experiments')
+                      return ExperimentCard(
+                        id: snapshot.data![index]['id'],
+                        title: snapshot.data![index]['title'],
+                        date: DateTime.parse(
+                            snapshot.data![index]['created_time']),
+                        description: snapshot.data![index]['brief_description'],
+                      );
+                    else if (widget.query == 'procedures')
+                      return ModelCard(
+                        id: snapshot.data![index]['id'],
+                        title: snapshot.data![index]['title'],
+                        description: snapshot.data![index]['brief_description'],
+                        type: snapshot.data![index]['model_type'],
+                      );
+                    else
+                      return const SizedBox();
+                  },
+                );
+              } else {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  child: NothingFound(),
+                );
+              }
             }
-          }
-        },
+          },
+        ),
       ),
     );
   }
