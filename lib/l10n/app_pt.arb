@@ -69,6 +69,7 @@
     }
   },
   "creationDate": "Data de criação",
+  "editDate": "Data de modificação",
   "procedures": "Procedimentos",
   "experimentData": "Dados do experimento",
   "experimentType": "Tipo de experimento",
@@ -121,6 +122,13 @@
   "minutes": "minutos",
   "seconds": "segundos",
   "add": "Adicionar",
+  "filter": "Filtrar",
+  "title": "Título",
+  "date": "Data",
+  "order": "Ordem",
+  "ascending": "Crescente",
+  "descending": "Decrescente",
+  "filterBy": "Filtrar por",
 
   "settings": "Configurações",
   "@settings": {

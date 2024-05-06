@@ -21,10 +21,52 @@ class ExperimentsList extends StatefulWidget {
 }
 
 class _ExperimentsListState extends State<ExperimentsList> {
-  Future<List<Map<String, dynamic>>> queryExperiments() async {
+  List<Map<String, dynamic>> _data = [];
+  int _filterOption = 2;
+  bool _ascending = false;
+
+  Future<void> queryExperiments() async {
+    // Order by
+    String orderBy;
+    String asc;
+
+    if (_filterOption == 0) {
+      orderBy = 'title';
+    } else if (_filterOption == 1) {
+      orderBy = 'created_time';
+    } else {
+      orderBy = 'last_updated';
+    }
+
+    if (_ascending) {
+      asc = 'ASC';
+    } else {
+      asc = 'DESC';
+    }
+
+    orderBy += ' $asc';
+
     Database db = await openMyDatabase();
-    List<Map<String, dynamic>> result = await db.query(widget.query);
-    return result;
+    List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(
+        await db.query(widget.query, orderBy: orderBy));
+
+    await db.close();
+    setState(() {
+      _data = result;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Set the filter option to title if is querying for procedures
+    if (widget.query == 'procedures') {
+      _filterOption = 0;
+    }
+
+    _ascending = false;
+    queryExperiments();
   }
 
   @override
@@ -37,6 +79,103 @@ class _ExperimentsListState extends State<ExperimentsList> {
               : AppLocalizations.of(context)!.models,
         ),
         actions: [
+          // Filter button
+          IconButton(
+            icon: Icon(Icons.filter_list,
+                color: Theme.of(context).colorScheme.secondary),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                showDragHandle: true,
+                builder: (context) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // mode title
+                      Text(
+                        AppLocalizations.of(context)!.filterBy,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      // List tiles
+                      if (widget.query == 'experiments')
+                        ListTile(
+                          title: Text(
+                            AppLocalizations.of(context)!.title,
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                          leading: const Icon(Icons.title),
+                          selected: _filterOption == 0,
+                          selectedTileColor:
+                              Theme.of(context).colorScheme.secondaryContainer,
+                          onTap: () {
+                            setState(() {
+                              _filterOption = 0;
+                            });
+                            queryExperiments();
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      if (widget.query == 'experiments')
+                        ListTile(
+                          title: Text(
+                            AppLocalizations.of(context)!.creationDate,
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                          leading: const Icon(Icons.create_new_folder),
+                          selected: _filterOption == 1,
+                          selectedTileColor:
+                              Theme.of(context).colorScheme.secondaryContainer,
+                          onTap: () {
+                            setState(() {
+                              _filterOption = 1;
+                            });
+                            queryExperiments();
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      if (widget.query == 'experiments')
+                        ListTile(
+                          title: Text(
+                            AppLocalizations.of(context)!.editDate,
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                          leading: const Icon(Icons.edit),
+                          selected: _filterOption == 2,
+                          selectedTileColor:
+                              Theme.of(context).colorScheme.secondaryContainer,
+                          onTap: () {
+                            setState(() {
+                              _filterOption = 2;
+                            });
+                            queryExperiments();
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      // Ascending or descending switch
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.order,
+                        ),
+                        subtitle: Text(
+                          _ascending
+                              ? AppLocalizations.of(context)!.ascending
+                              : AppLocalizations.of(context)!.descending,
+                        ),
+                        value: _ascending,
+                        onChanged: (value) => setState(() {
+                          _ascending = value;
+                          Navigator.of(context).pop();
+                          queryExperiments();
+                        }),
+                      ),
+                      const SizedBox(height: 16.0)
+                    ],
+                  );
+                },
+              );
+            },
+            tooltip: AppLocalizations.of(context)!.filter,
+          ),
           IconButton(
             icon:
                 Icon(Icons.add, color: Theme.of(context).colorScheme.secondary),
@@ -59,50 +198,36 @@ class _ExperimentsListState extends State<ExperimentsList> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          setState(() {});
+          await queryExperiments();
         },
-        child: FutureBuilder(
-          future: queryExperiments(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            } else {
-              if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 8.0, horizontal: 16.0),
-                  itemCount: snapshot.data?.length,
-                  itemBuilder: (context, index) {
-                    if (widget.query == 'experiments')
-                      return ExperimentCard(
-                        id: snapshot.data![index]['id'],
-                        title: snapshot.data![index]['title'],
-                        date: DateTime.parse(
-                            snapshot.data![index]['created_time']),
-                        description: snapshot.data![index]['brief_description'],
-                      );
-                    else if (widget.query == 'procedures')
-                      return ModelCard(
-                        id: snapshot.data![index]['id'],
-                        title: snapshot.data![index]['title'],
-                        description: snapshot.data![index]['brief_description'],
-                        type: snapshot.data![index]['model_type'],
-                      );
-                    else
-                      return const SizedBox();
-                  },
-                );
-              } else {
-                return const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: NothingFound(),
-                );
-              }
-            }
-          },
-        ),
+        child: _data.isEmpty
+            ? const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: NothingFound(),
+              )
+            : ListView.builder(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                itemCount: _data.length,
+                itemBuilder: (context, index) {
+                  if (widget.query == 'experiments')
+                    return ExperimentCard(
+                      id: _data[index]['id'],
+                      title: _data[index]['title'],
+                      date: DateTime.parse(_data[index]['created_time']),
+                      description: _data[index]['brief_description'],
+                    );
+                  else if (widget.query == 'procedures')
+                    return ModelCard(
+                      id: _data[index]['id'],
+                      title: _data[index]['title'],
+                      description: _data[index]['brief_description'],
+                      type: _data[index]['model_type'],
+                    );
+                  else
+                    return const SizedBox();
+                },
+              ),
       ),
     );
   }
