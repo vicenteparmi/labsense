@@ -34,6 +34,7 @@
   },
   "noDevicesFound": "Nenhum dispositivo encontrado",
   "noDevicesConnected": "Nenhum dispositivo conectado",
+  "noDevicesConnectedMessage": "Conecte um dispositivo para poder realizar experimentos. Você pode conectar um dispositivo a partir da tela de início.",
   "connect": "Conectar",
   "@connect": {
     "description": "Connect to the selected device"
@@ -108,8 +109,17 @@
   "cyclicVoltammetryExplanation": "A voltametria cíclica é uma técnica poderosa em eletroquímica usada para investigar os processos de transferência de elétrons de uma molécula. Ele funciona aplicando uma tensão gradualmente crescente a um eletrodo de trabalho mergulhado em uma solução, revertendo a tensão e trazendo-a de volta ao ponto inicial. Enquanto isso, a resposta atual é medida. Isso cria um gráfico característico denominado voltamograma cíclico, que revela informações sobre a capacidade da molécula de ganhar ou perder elétrons (atividade redox), a facilidade dessas transferências de elétrons e os níveis de energia envolvidos.",
 
   "startExperiment": "Iniciar experimento",
+  "newExecution": "Nova execução",
+  "runName": "Nome da execução",
+  "runDescription": "Descrição da execução",
+  "errorTitle": "Preencha o título",
+  "errorDescription": "Preencha a descrição",
+  "executing": "Executando",
+  "stopExecution": "Parar execução",
+  "stopExecutionMsg": "Você tem certeza que deseja parar a execução? Os dados coletados até agora serão mantidos.",
 
   "cancel": "Cancelar",
+  "ok": "OK",
   "save": "Salvar",
   "edit": "Editar",
   "delete": "Apagar",
@@ -129,6 +139,8 @@
   "ascending": "Crescente",
   "descending": "Decrescente",
   "filterBy": "Filtrar por",
+  "start": "Iniciar",
+  "stop": "Parar",
 
   "settings": "Configurações",
   "@settings": {

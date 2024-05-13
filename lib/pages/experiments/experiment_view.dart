@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:labsense/pages/experiment_run/set_run_info.dart';
 import 'package:labsense/pages/main_pages/home.dart';
 import 'package:labsense/scripts/database.dart';
 import 'package:sqflite/sqflite.dart';
@@ -113,8 +114,30 @@ class _ExperimentViewContent extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Navigate to the experiment procedure page
+          Navigator.of(context).push(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  SetRunInfo(experimentId: experimentId),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                var begin = const Offset(1.0, 0.0);
+                var end = Offset.zero;
+                var tween = Tween(begin: begin, end: end);
+
+                var curvedAnimation = CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeInOut,
+                );
+
+                return SlideTransition(
+                  position: tween.animate(curvedAnimation),
+                  child: child,
+                );
+              },
+            ),
+          );
         },
-        child: const Icon(Icons.play_arrow),
+        child: const Icon(Icons.play_arrow_rounded),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       bottomNavigationBar: BottomAppBar(
