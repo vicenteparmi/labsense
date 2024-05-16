@@ -18,11 +18,17 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
         title: 'LabSensE',
         theme: ThemeData(
-          colorScheme: lightColorScheme,
+          colorScheme: MaterialTheme.lightScheme().toColorScheme(),
+          pageTransitionsTheme: const PageTransitionsTheme(builders: {
+            TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+          }),
           useMaterial3: true,
         ),
         darkTheme: ThemeData(
-          colorScheme: darkColorScheme,
+          colorScheme: MaterialTheme.darkScheme().toColorScheme(),
+          pageTransitionsTheme: const PageTransitionsTheme(builders: {
+            TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+          }),
           useMaterial3: true,
         ),
         themeMode: ThemeMode.light,
