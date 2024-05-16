@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:labsense/scripts/bluetooth_com.dart';
+import 'package:labsense/scripts/calculate_duration.dart';
 import 'package:labsense/scripts/database.dart';
 import 'package:step_tracker/step_tracker.dart';
 
@@ -21,6 +22,9 @@ class ExperimentRunner extends StatefulWidget {
 
 class _ExperimentRunnerState extends State<ExperimentRunner> {
   List<Map<String, dynamic>> steps = [];
+  String _stepTitle = 'Carregando dados...';
+  double? _progress;
+  int _currentStep = 0;
 
   void _fetchSteps() {
     // load data from database
@@ -38,14 +42,73 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
     });
   }
 
+  void _updateState(String title, double? progress, int step) {
+    debugPrint('Title: $title, Progress: $progress, Step: $step');
+    setState(() {
+      _stepTitle = title;
+      _progress = progress;
+      _currentStep = step;
+    });
+  }
+
+  Future<void> _runExperiment() async {
+    // For each step in the experiment, send data to the device
+    // and ask the device to run it.
+    for (int index = 0; index < steps.length; index++) {
+      final step = steps[index];
+
+      // Update progress
+      _updateState(AppLocalizations.of(context)!.sendingData, null, index + 1);
+
+      // Send data to device
+      // TODO: Fix this data
+      await sendDataToDevice('''
+        \$1!
+        ${step['initial_potential']}!
+        ${step['final_potential']}!
+        ${step['start_potential']}!
+        ${step['scan_rate']}!
+        ${step['cycle_count']}!
+        ${step['sweep_direction']}!
+      ''');
+
+      _updateState(step['title'], 0.0, index + 2);
+
+      // Calculate duration of the experiment
+      double duration = calculateDuration(
+          double.parse(step['initial_potential']),
+          double.parse(step['final_potential']),
+          double.parse(step['scan_rate']),
+          int.parse(step['cycle_count']));
+
+      // Start the experiment
+      await sendDataToDevice('\$2#');
+
+      // Animate progress bar
+      for (int i = 0; i < 100; i++) {
+        await Future.delayed(Duration(seconds: duration.toInt() ~/ 100), () {
+          setState(() {
+            _progress = i / 100;
+          });
+        });
+      }
+
+      // Update state to show that the current step has finished
+      _updateState(AppLocalizations.of(context)!.stepFinished, 1.0, index + 2);
+    }
+
+    // Update state to show that the experiment has finished
+    _updateState(AppLocalizations.of(context)!.experimentFinished, 1.0,
+        steps.length + 1);
+  }
+
   @override
   void initState() {
     _fetchSteps();
-
-    // DEBUG: Send data to device
-    debugPrint('Sending data to device');
-    sendDataToDevice('\$1!3!-1!1!0!1!100!200!600#');
-
+    // Wait 1 second before running the experiment
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _runExperiment();
+    });
     super.initState();
   }
 
@@ -55,6 +118,23 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.executing),
         automaticallyImplyLeading: false,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(8.0),
+          child: Padding(
+            padding: const EdgeInsets.only(left: 16.0, bottom: 4.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                _stepTitle,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium!
+                    .copyWith(fontWeight: FontWeight.normal),
+                textAlign: TextAlign.start,
+              ),
+            ),
+          ),
+        ),
         actions: [
           // Debug button
           IconButton(
@@ -117,7 +197,9 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
       body: Column(
         children: [
           // Progress indicator
-          const LinearProgressIndicator(),
+          LinearProgressIndicator(
+            value: _progress,
+          ),
           // Display experiment name and description
           Expanded(
             child: ListView(
@@ -136,7 +218,9 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
                         height: 200,
                         // Add border radius to all corners
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
                           borderRadius:
                               const BorderRadius.all(Radius.circular(24.0)),
                         ),

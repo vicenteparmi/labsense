@@ -12,6 +12,7 @@ import 'package:labsense/pages/experiments/query_list.dart';
 import 'package:labsense/pages/main_pages/settings.dart';
 import 'package:labsense/scripts/database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../connect_device/device_connection.dart';
 
@@ -246,6 +247,19 @@ class _HomeState extends State<Home> {
                         ],
                       ),
                     ),
+                  ),
+                ),
+              ),
+              leadingWidth: 80.0,
+              leading: GestureDetector(
+                onTap: () => launchUrl(Uri.parse('https://www.instagram.com/labsense.ufpr/')),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 16.0),
+                  child: Image.asset(
+                    'assets/images/labsense.png',
+                    fit: BoxFit
+                        .contain, // specify how the image should be inscribed into the box
+                    semanticLabel: 'LabSense logo',
                   ),
                 ),
               ),

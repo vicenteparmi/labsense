@@ -30,8 +30,7 @@ class _SetRunInfoState extends State<SetRunInfo> {
               // Check if device is connected via shared preferences
               SharedPreferences.getInstance().then((prefs) {
                 if (!prefs.containsKey('connectedDevice') ||
-                    prefs.getString('connectedDevice') == null ||
-                    prefs.getString('connectedDevice')!.isEmpty) {
+                    prefs.getStringList('connectedDevice')!.isEmpty) {
                   // Show dialog to connect device
                   showDialog(
                     context: context,

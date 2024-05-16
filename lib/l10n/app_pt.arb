@@ -118,6 +118,9 @@
   "executing": "Executando",
   "stopExecution": "Parar execução",
   "stopExecutionMsg": "Você tem certeza que deseja parar a execução? Os dados coletados até agora serão mantidos.",
+  "sendingData": "Enviando dados...",
+  "experimentFinished": "Experimento finalizado",
+  "stepFinished": "Etapa finalizada",
 
   "cancel": "Cancelar",
   "ok": "OK",
@@ -142,6 +145,7 @@
   "filterBy": "Filtrar por",
   "start": "Iniciar",
   "stop": "Parar",
+  "step": "Etapa",
 
   "settings": "Configurações",
   "@settings": {
