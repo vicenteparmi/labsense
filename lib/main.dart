@@ -31,7 +31,21 @@ class MyApp extends StatelessWidget {
           }),
           useMaterial3: true,
         ),
-        themeMode: ThemeMode.light,
+        highContrastTheme: ThemeData(
+          colorScheme: MaterialTheme.lightHighContrastScheme().toColorScheme(),
+          pageTransitionsTheme: const PageTransitionsTheme(builders: {
+            TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+          }),
+          useMaterial3: true,
+        ),
+        highContrastDarkTheme: ThemeData(
+          colorScheme: MaterialTheme.darkHighContrastScheme().toColorScheme(),
+          pageTransitionsTheme: const PageTransitionsTheme(builders: {
+            TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+          }),
+          useMaterial3: true,
+        ),
+        themeMode: ThemeMode.system,
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,

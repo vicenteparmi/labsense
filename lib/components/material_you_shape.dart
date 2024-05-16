@@ -50,7 +50,7 @@ class CirclePainter extends CustomPainter {
     final radius = min(size.width, size.height) / 2 - 20;
 
     final paint = Paint()
-      ..color = Colors.blue
+      ..color = Colors.blue.withOpacity(0.8)
       ..style = PaintingStyle.fill;
 
     List<Offset> points = [];
