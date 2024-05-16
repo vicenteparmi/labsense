@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:labsense/pages/experiment_run/experiment_runner.dart';
@@ -71,24 +70,6 @@ class _SetRunInfoState extends State<SetRunInfo> {
                   );
                 }
               });
-            }
-
-            // Bypass in debug mode
-            // TODO: Remove this block after testing
-            if (kDebugMode) {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => ExperimentRunner(
-                    experimentId: widget.experimentId,
-                    name: _nameController.text.isEmpty
-                        ? 'Experimento teste'
-                        : _nameController.text,
-                    description: _descriptionController.text.isEmpty
-                        ? 'Sem descrição'
-                        : _descriptionController.text,
-                  ),
-                ),
-              );
             }
           },
           icon: const Icon(Icons.play_arrow_rounded),

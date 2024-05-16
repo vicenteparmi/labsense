@@ -43,7 +43,7 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
     _fetchSteps();
 
     // DEBUG: Send data to device
-    print('Sending data to device');
+    debugPrint('Sending data to device');
     sendDataToDevice('\$1!3!-1!1!0!1!100!200!600#');
 
     super.initState();
@@ -136,7 +136,7 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
                         height: 200,
                         // Add border radius to all corners
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceVariant,
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
                           borderRadius:
                               const BorderRadius.all(Radius.circular(24.0)),
                         ),
