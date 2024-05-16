@@ -22,6 +22,8 @@ class _CreateModelState extends State<CreateModel> {
       TextEditingController();
   final TextEditingController _finalPotentialController =
       TextEditingController();
+  final TextEditingController _startPotentialController =
+      TextEditingController();
   final TextEditingController _scanRateController = TextEditingController();
   final TextEditingController _cycleCountController = TextEditingController();
 
@@ -368,6 +370,32 @@ class _CreateModelState extends State<CreateModel> {
                                 TextFormField(
                                   decoration: InputDecoration(
                                     label: Text(
+                                        '${AppLocalizations.of(context)!.startPotential} (V)'),
+                                    icon: const Icon(Icons.start_rounded),
+                                    border: const OutlineInputBorder(),
+                                  ),
+                                  textInputAction: TextInputAction.next,
+                                  keyboardType: TextInputType.number,
+                                  controller: _startPotentialController,
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return AppLocalizations.of(context)!
+                                          .requiredField;
+                                    } else if (double.tryParse(value) == null) {
+                                      return AppLocalizations.of(context)!
+                                          .invalidNumber;
+                                    } else if (double.parse(value) < -1 ||
+                                        double.parse(value) > 1) {
+                                      return AppLocalizations.of(context)!
+                                          .outOfRange(1, -1);
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 12.0),
+                                TextFormField(
+                                  decoration: InputDecoration(
+                                    label: Text(
                                         '${AppLocalizations.of(context)!.scanRate} (V/s)'),
                                     icon: const Icon(Icons.speed_rounded),
                                     border: const OutlineInputBorder(),
@@ -382,11 +410,10 @@ class _CreateModelState extends State<CreateModel> {
                                     } else if (double.tryParse(value) == null) {
                                       return AppLocalizations.of(context)!
                                           .invalidNumber;
-                                    } else if (double.parse(value) < -1 ||
-                                        double.parse(value) > 1) {
+                                    } else if (double.parse(value) <= 0 ||
+                                        double.parse(value) > 0.250) {
                                       return AppLocalizations.of(context)!
-                                          .outOfRange(1, -1);
-                                      // TODO: Add a realistic range
+                                          .outOfRange(0.250, 0);
                                     }
                                     return null;
                                   },
@@ -516,6 +543,7 @@ class _CreateModelState extends State<CreateModel> {
                                         _modelType,
                                         _initialPotentialController.text,
                                         _finalPotentialController.text,
+                                        _startPotentialController.text,
                                         _scanRateController.text,
                                         _cycleCountController.text,
                                         _sweepDirection);
@@ -547,6 +575,7 @@ Future<void> saveModel(
     String modelType,
     String initialPotential,
     String finalPotential,
+    String startPotential,
     String scanRate,
     String cycleCount,
     bool sweepDirection) async {
@@ -559,6 +588,7 @@ Future<void> saveModel(
           'model_type': modelType,
           'initial_potential': initialPotential,
           'final_potential': finalPotential,
+          'start_potential': startPotential,
           'scan_rate': scanRate,
           'cycle_count': cycleCount,
           'sweep_direction': sweepDirection ? 1 : 0,
