@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
@@ -26,7 +27,7 @@ Future<void> sendDataToDevice(String data) async {
     });
   }).catchError((error) {
     debugPrint('Cannot connect, exception occurred');
-    debugPrint(error);
+    debugPrint(error.toString());
   });
 }
 

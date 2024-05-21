@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:labsense/scripts/bluetooth_com.dart';
@@ -26,6 +28,7 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
   double? _progress;
   int _currentStep = 0;
 
+  /// Fetches the steps for the experiment from the database.
   void _fetchSteps() {
     // load data from database
     openMyDatabase().then((db) {
@@ -42,6 +45,7 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
     });
   }
 
+  /// Updates the state of the experiment runner.
   void _updateState(String title, double? progress, int step) {
     debugPrint('Title: $title, Progress: $progress, Step: $step');
     setState(() {
@@ -51,6 +55,7 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
     });
   }
 
+  /// Function to run the experiment, step by step.
   Future<void> _runExperiment() async {
     // For each step in the experiment, send data to the device
     // and ask the device to run it.
@@ -61,16 +66,8 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
       _updateState(AppLocalizations.of(context)!.sendingData, null, index + 1);
 
       // Send data to device
-      // TODO: Fix this data
-      await sendDataToDevice('''
-        \$1!
-        ${step['initial_potential']}!
-        ${step['final_potential']}!
-        ${step['start_potential']}!
-        ${step['scan_rate']}!
-        ${step['cycle_count']}!
-        ${step['sweep_direction']}!
-      ''');
+      await sendDataToDevice(
+          '\$1!${step['cycle_count']}!${step['initial_potential']}!${step['final_potential']}!${step['start_potential']}!1!${step['scan_rate']}!${step['sweep_direction']}#');
 
       _updateState(step['title'], 0.0, index + 2);
 
@@ -82,7 +79,10 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
           int.parse(step['cycle_count']));
 
       // Start the experiment
-      await sendDataToDevice('\$2#');
+      Future.delayed(const Duration(seconds: 3), () {
+        debugPrint('Starting the experiment');
+        sendDataToDevice('\$2#');
+      });
 
       // Animate progress bar
       for (int i = 0; i < 100; i++) {
@@ -109,6 +109,12 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
     Future.delayed(const Duration(milliseconds: 100), () {
       _runExperiment();
     });
+
+    // Listen for data from the device
+    _dataStreamController.stream.listen((data) {
+      debugPrint('Data received: $data');
+    });
+
     super.initState();
   }
 

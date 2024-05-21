@@ -30,13 +30,14 @@ double current = 0; // Variable for storing the current value
 
 // Variables for the scan rates
 int vevals[] = {}; // Array of multiple scan rates values (mV/s)
-int count = 0; // Number of scan rates
+int count = 1; // Number of scan rates
 long *intervalos = (long*) malloc(sizeof(long) * count);
 int cycle_count = 0; // Number of cycles
 float min_voltage = 0; // Minimum voltage
 float max_voltage = 0; // Maximum voltage
 float start_voltage = 0; // Start voltage
 bool enable_sound = false; // Enable sound
+bool sweep_direction = true; // Sweep direction (true = forward, false = reverse)
 
 void setup() {
 	TCCR1B = TCCR1B & B11111000 | B00000001; //Set dividers to change PWM frequency
@@ -53,6 +54,11 @@ void setup() {
 }
 
 void loop() {
+
+    // Send data from ardunio to android every 1 second
+    if (DEBUGMODE) {
+        bluetooth.println("$1#");
+    }
 
     if (bluetooth.available() > 0) {
 
@@ -71,52 +77,6 @@ void loop() {
             data += RECIEVED;
         }
     }
-
-	// for(int pos = 0; pos < count; pos++){
-	// 	intervalos[pos]=(1000000L/((vevals[pos])*128L));
-	// }
-	
-	// for(int pos = 0; pos <= count; pos++) {
-	// 	n = 0;
-	// 	while(n <= 1){
-	// 		//Start the forward scan
-	// 		for(val = 0; val <= 255; val++){
-	// 			analogWrite(a,val);
-	// 			Serial.print(val);
-	// 			delay(intervalos[pos]);
-	// 			//c = ((0.00195*(analogRead(ct))-1)*1000); // Current reading outputs in uA!!!
-	// 			c =analogRead(ct);
-	// 			Serial.print(" ");
-	// 			Serial.print(c);
-	// 			Serial.print(" ");
-	// 			Serial.print(n);
-	// 			Serial.print(" ");
-	// 			Serial.print(vevals[pos]);
-	// 			Serial.print(" ");
-	// 			Serial.println(intervalos[pos]);
-	// 			}
-			
-	// 		//Start the reverse scan
-	// 		for(val = 255; val >= 0; val--){
-	// 			analogWrite(a,val);
-	// 			Serial.print(val);
-	// 			delay(intervalos[pos]);
-	// 			//c = ((0.00195*(analogRead(ct))-1)*1000); // Current reading outputs in uA!!!
-				
-	// 			c =analogRead(ct);
-	// 			Serial.print(" ");
-	// 			Serial.print(c);
-	// 			Serial.print(" ");
-	// 			Serial.print(n);
-	// 			Serial.print(" ");
-	// 			Serial.print(vevals[pos]);
-	// 			Serial.print(" ");
-	// 			Serial.println(intervalos[pos]);
-	// 		}
-			
-	// 		n=n+1;
-	// 	}
-	// }
 }
 
 void interpretData(String data) {
@@ -124,11 +84,11 @@ void interpretData(String data) {
                 // Record the procedure data
                 // The data is in the format:
                 // [1][cycle_count][min_voltage][max_voltage][start_voltage]
-                // [enable_sound][array_of_scan_rates]
-                // Example: 1!3!-1!1!0!1!100!200!300
+                // [enable_sound][scan_rate][sweep_direction]
+                // Example: 1!3!-1!1!0!1!100
                 // This means that the procedure will have 3 cycles, the minimum voltage is -1V,
-                // the maximum voltage is 1V, the start voltage is 0V, the sound is enabled and the
-                // scan rates are 100, 200 and 300 mV/s
+                // the maximum voltage is 1V, the start voltage is 0V, the sound is enabled,
+                // the scan rate is 100 mV/s and the sweep direction is foward
 
                 // Split the data by the '!' character into a array of strings
                 String dataParts[20]; // Maximum of 20 parts, minimum of 6 parts
@@ -147,14 +107,8 @@ void interpretData(String data) {
                 float maxVoltage = dataParts[2].toFloat();
                 float startVoltage = dataParts[3].toFloat();
                 bool enableSound = dataParts[4] == "1";
-                int scanRates[15];
-                int scanRateCount = 0;
-                for (int i = 5; i < 20; i++) {
-                    if (dataParts[i] != "") {
-                        scanRates[scanRateCount] = dataParts[i].toInt();
-                        scanRateCount++;
-                    }
-                }
+                float scanRate = dataParts[5].toFloat();
+                bool sweepDirection = dataParts[6] == "1";
 
                 // Print the procedure data
                 if (DEBUGMODE) {
@@ -168,11 +122,10 @@ void interpretData(String data) {
                     Serial.println(startVoltage);
                     Serial.print("Enable sound: ");
                     Serial.println(enableSound);
-                    Serial.print("Scan rates: ");
-                    for (int i = 0; i < scanRateCount; i++) {
-                        Serial.print(scanRates[i]);
-                        Serial.print(" ");
-                    }
+                    Serial.print("Scan rate: ");
+                    Serial.println(scanRate);
+                    Serial.print("Sweep direction: ");
+                    Serial.println(sweepDirection);
                 }
 
                 // Save the procedure data
@@ -181,10 +134,8 @@ void interpretData(String data) {
                 max_voltage = maxVoltage;
                 start_voltage = startVoltage;
                 enable_sound = enableSound;
-                for (int i = 0; i < scanRateCount; i++) {
-                    vevals[i] = scanRates[i];
-                }
-                count = scanRateCount;
+                vevals[count] = scanRate;
+                sweep_direction = sweepDirection;
 
                 // Calculate the intervals
                 for (int i = 0; i < count; i++) {
@@ -198,10 +149,9 @@ void interpretData(String data) {
                 // This means that the experiment will start
 
                 // Print the start message
-                if (DEBUGMODE) {
-                    Serial.println("Starting the experiment");
-                }
-
+                bluetooth.println("$2#");
+                Serial.println("Starting the experiment");
+            
                 // Start the experiment
                 runExperiment();
             } else {
@@ -217,8 +167,11 @@ void runExperiment() {
   Serial.println("\n---------------------------------------------");
   for (int i = 5; i > 0; i--) {
   	Serial.println("Starting in: " + String(i));
+    bluetooth.println("Starting in: " + String(i));
   	delay(1000); // delay for 1 second
   }
+
+    bluetooth.write(END_BYTE);
 
 	for(int pos = 0; pos < count; pos++){
 	intervalos[pos]=(1000000L/((vevals[pos])*128L));
