@@ -39,6 +39,7 @@
   "@connect": {
     "description": "Connect to the selected device"
   },
+  "errorConnecting": "Erro ao conectar",
 
   "experiments": "Experimentos",
   "@experiments": {

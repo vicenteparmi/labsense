@@ -9,6 +9,7 @@ class BluetoothDeviceListEntry extends ListTile {
     super.onTap,
     super.onLongPress,
     super.enabled,
+    required bool selected,
   }) : super(
           leading: const Icon(Icons.devices),
           title: Text(device.name ?? ""),
@@ -16,6 +17,7 @@ class BluetoothDeviceListEntry extends ListTile {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8.0),
           ),
+          tileColor: selected ? Colors.red[300] : Colors.transparent,
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[

@@ -15,6 +15,7 @@
     "noDevicesConnected",
     "noDevicesConnectedMessage",
     "connect",
+    "errorConnecting",
     "experiments",
     "models",
     "viewAll",

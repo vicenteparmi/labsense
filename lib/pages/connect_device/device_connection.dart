@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:labsense/components/material_you_shape.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -192,28 +193,38 @@ class _ConnectDeviceState extends State<ConnectDevice> {
                                   .onPrimaryContainer,
                             ),
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          // Dot
-                          BlinkingCircle(
-                            color: isConnected ? Colors.green : Colors.red,
-                          ),
-                          const SizedBox(width: 4.0),
-                          Text(
-                            isConnected
-                                ? '${AppLocalizations.of(context)!.connected} ($connectedDevice)'
-                                : AppLocalizations.of(context)!.disconnected,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium!
-                                .copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onPrimaryContainer,
-                                ),
-                          ),
-                        ],
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder: (child, animation) {
+                          return ScaleTransition(
+                            scale: animation,
+                            child: child,
+                          );
+                        },
+                        child: Row(
+                          key: ValueKey<bool>(isConnected),
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            // Dot
+                            BlinkingCircle(
+                              color: isConnected ? Colors.green : Colors.red,
+                            ),
+                            const SizedBox(width: 4.0),
+                            Text(
+                              isConnected
+                                  ? '${AppLocalizations.of(context)!.connected} ($connectedDevice)'
+                                  : AppLocalizations.of(context)!.disconnected,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium!
+                                  .copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onPrimaryContainer,
+                                  ),
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 24.0),
                     ],
@@ -237,33 +248,57 @@ class _ConnectDeviceState extends State<ConnectDevice> {
                   return BluetoothDeviceListEntry(
                     device: device,
                     rssi: result.rssi,
+                    selected: deviceID == address,
                     onTap: () async {
                       try {
                         bool bonded = false;
                         if (device.isBonded) {
-                          debugPrint('Unbonding from ${device.address}...');
-                          await FlutterBluetoothSerial.instance
-                              .removeDeviceBondWithAddress(address);
                           debugPrint(
-                              'Unbonding from ${device.address} has succed');
-                          setState(() {
-                            isConnected = false;
-                            connectedDevice = '';
-                            widget.updateConnection(false, '');
-                          });
+                              'Device ${device.address} is already bonded');
                           SharedPreferences.getInstance().then((prefs) {
-                            prefs.remove('connectedDevice');
+                            prefs.setStringList('connectedDevice', [
+                              device.name ?? device.address,
+                              device.address,
+                            ]);
+                          });
+                          setState(() {
+                            isConnected = true;
+                            connectedDevice = device.name ?? '';
+                            widget.updateConnection(true, device.name ?? '');
+
+                            results[results.indexOf(result)] =
+                                BluetoothDiscoveryResult(
+                                    device: BluetoothDevice(
+                                      name: device.name ?? '',
+                                      address: address,
+                                      type: device.type,
+                                      bondState: BluetoothBondState.bonded,
+                                    ),
+                                    rssi: result.rssi);
                           });
                         } else {
                           debugPrint('Bonding with ${device.address}...');
                           bonded = (await FlutterBluetoothSerial.instance
                               .bondDeviceAtAddress(address))!;
                           debugPrint(
-                              'Bonding with ${device.address} has ${bonded ? 'succed' : 'failed'}.');
+                              'Bonding with ${device.address} has ${bonded ? 'succeeded' : 'failed'}.');
+
                           setState(() {
                             isConnected = bonded;
                             connectedDevice = (bonded ? device.name : '')!;
                             widget.updateConnection(bonded, device.name ?? '');
+
+                            results[results.indexOf(result)] =
+                                BluetoothDiscoveryResult(
+                                    device: BluetoothDevice(
+                                      name: device.name ?? '',
+                                      address: address,
+                                      type: device.type,
+                                      bondState: bonded
+                                          ? BluetoothBondState.bonded
+                                          : BluetoothBondState.none,
+                                    ),
+                                    rssi: result.rssi);
                           });
 
                           // Save to shared preferences
@@ -274,30 +309,18 @@ class _ConnectDeviceState extends State<ConnectDevice> {
                             ]);
                           });
                         }
-                        setState(() {
-                          results[results.indexOf(result)] =
-                              BluetoothDiscoveryResult(
-                                  device: BluetoothDevice(
-                                    name: device.name ?? '',
-                                    address: address,
-                                    type: device.type,
-                                    bondState: bonded
-                                        ? BluetoothBondState.bonded
-                                        : BluetoothBondState.none,
-                                  ),
-                                  rssi: result.rssi);
-                        });
                       } catch (ex) {
                         showDialog(
-                          // ignore: use_build_context_synchronously
                           context: context,
                           builder: (BuildContext context) {
                             return AlertDialog(
-                              title: const Text('Error occured while bonding'),
+                              title: Text(AppLocalizations.of(context)!
+                                  .errorConnecting),
                               content: Text(ex.toString()),
                               actions: <Widget>[
                                 TextButton(
-                                  child: const Text("Close"),
+                                  child:
+                                      Text(AppLocalizations.of(context)!.close),
                                   onPressed: () {
                                     Navigator.of(context).pop();
                                   },
@@ -308,7 +331,44 @@ class _ConnectDeviceState extends State<ConnectDevice> {
                         );
                       }
                     },
-                  );
+                    onLongPress: () async {
+                      if (device.isBonded) {
+                        debugPrint('Unbonding from ${device.address}...');
+                        await FlutterBluetoothSerial.instance
+                            .removeDeviceBondWithAddress(address);
+                        debugPrint(
+                            'Unbonding from ${device.address} has succeeded');
+                        setState(() {
+                          isConnected = false;
+                          connectedDevice = '';
+                          widget.updateConnection(false, '');
+
+                          results[results.indexOf(result)] =
+                              BluetoothDiscoveryResult(
+                                  device: BluetoothDevice(
+                                    name: device.name ?? '',
+                                    address: address,
+                                    type: device.type,
+                                    bondState: BluetoothBondState.none,
+                                  ),
+                                  rssi: result.rssi);
+                        });
+                        SharedPreferences.getInstance().then((prefs) {
+                          prefs.remove('connectedDevice');
+                        });
+                      }
+                    },
+                  )
+                      .animate()
+                      .fadeIn(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeOutCubic)
+                      .slideY(
+                        begin: 0.5,
+                        end: 0.0,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOutCubic,
+                      );
                 },
               ),
             ),
