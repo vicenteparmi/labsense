@@ -1,6 +1,10 @@
 import 'dart:async';
-
+import 'dart:convert';
+import 'dart:math';
+import 'dart:typed_data';
+import 'package:d_chart/d_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:labsense/scripts/bluetooth_com.dart';
 import 'package:labsense/scripts/calculate_duration.dart';
@@ -27,6 +31,9 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
   String _stepTitle = 'Carregando dados...';
   double? _progress;
   int _currentStep = 0;
+  final StreamController<String> _streamController = StreamController<String>();
+  List<List<double>> _data = [];
+  List<NumericGroup> _groupList = [];
 
   /// Fetches the steps for the experiment from the database.
   void _fetchSteps() {
@@ -82,7 +89,8 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
       Future.delayed(const Duration(seconds: 3), () {
         debugPrint('Starting the experiment');
         sendDataToDevice('\$2#');
-      });
+      }).then((_) => Future.delayed(
+          const Duration(seconds: 3), () => _handleStreamData()));
 
       // Animate progress bar
       for (int i = 0; i < 100; i++) {
@@ -102,17 +110,77 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
         steps.length + 1);
   }
 
+  /// Function to listen the data from the device.
+  Future<void> _listenData() async {
+    String adress = await getConnectedDevice().then((value) => value[1]);
+    BluetoothConnection connection =
+        await BluetoothConnection.toAddress(adress);
+
+    String result = '';
+
+    connection.input!.listen((Uint8List data) {
+      result += ascii.decode(data);
+
+      // Send data to the stream controller every 2 seconds to update the graph
+      Future.delayed(const Duration(seconds: 3), () {
+        _streamController.add(result);
+      });
+
+      // Close the connection if the data is "END"
+      if (ascii.decode(data).contains('END')) {
+        connection.finish();
+        // Disconnect from the device
+        debugPrint('Connection closed');
+        return;
+      }
+    }).onDone(() {
+      connection.finish();
+      debugPrint('Connection closed');
+    });
+  }
+
+  Future<void> _handleStreamData() async {
+    await _listenData();
+
+    _streamController.stream.listen((data) {
+      // Parse data and update the graph
+      // The data is a list of "\n" separated values
+      // Each value is separated by ";", with two values per line
+      // The first value is the potential and the second value is the current
+      List<List<String>> parsedValues = data
+          .split('\n')
+          .map((e) => e.split(';'))
+          .where((element) => element.length == 2)
+          .toList();
+
+      // Convert the parsed values to a list of doubles
+      List<List<double>> values = parsedValues
+          .map((e) => [double.parse(e[0]), double.parse(e[1])])
+          .toList();
+
+      _groupList = [
+        NumericGroup(
+            id: 'Dados',
+            color: Theme.of(context).colorScheme.primary,
+            seriesCategory: 'Dados',
+            data: _data.map((e) {
+              return NumericData(domain: e[0], measure: e[1]);
+            }).toList()),
+      ];
+
+      // Update the graph
+      setState(() {
+        _data = values;
+      });
+    });
+  }
+
   @override
   void initState() {
     _fetchSteps();
     // Wait 1 second before running the experiment
     Future.delayed(const Duration(milliseconds: 100), () {
       _runExperiment();
-    });
-
-    // Listen for data from the device
-    _dataStreamController.stream.listen((data) {
-      debugPrint('Data received: $data');
     });
 
     super.initState();
@@ -213,25 +281,39 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
                   const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
               children: [
                 // Space for graph, title and steps.
-                // Graph placeholder
-                Card.filled(
-                  margin: EdgeInsets.zero,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Graph placeholder
-                      Container(
-                        height: 200,
-                        // Add border radius to all corners
-                        decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest,
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(24.0)),
+                SizedBox(
+                  height: 300,
+                  width: double.infinity,
+                  child: AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: DChartScatterN(
+                      groupList: _groupList,
+                      layoutMargin: LayoutMargin(16, 16, 16, 16),
+                      measureAxis: MeasureAxis(
+                        numericViewport: NumericViewport(
+                          // Minimum value on _data
+                          _data.isNotEmpty
+                              ? _data.map((e) => e[1]).reduce(min)
+                              : 0,
+                          // Maximum value on _data
+                          _data.isNotEmpty
+                              ? _data.map((e) => e[1]).reduce(max)
+                              : 1,
                         ),
                       ),
-                    ],
+                      domainAxis: DomainAxis(
+                        numericViewport: NumericViewport(
+                          // Minimum value on _data
+                          _data.isNotEmpty
+                              ? _data.map((e) => e[0]).reduce(min)
+                              : 0,
+                          // Maximum value on _data
+                          _data.isNotEmpty
+                              ? _data.map((e) => e[0]).reduce(max)
+                              : 1,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16.0),

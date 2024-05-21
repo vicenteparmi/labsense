@@ -54,12 +54,6 @@ void setup() {
 }
 
 void loop() {
-
-    // Send data from ardunio to android every 1 second
-    if (DEBUGMODE) {
-        bluetooth.println("$1#");
-    }
-
     if (bluetooth.available() > 0) {
 
         char RECIEVED = bluetooth.read();
@@ -167,11 +161,8 @@ void runExperiment() {
   Serial.println("\n---------------------------------------------");
   for (int i = 5; i > 0; i--) {
   	Serial.println("Starting in: " + String(i));
-    bluetooth.println("Starting in: " + String(i));
   	delay(1000); // delay for 1 second
   }
-
-    bluetooth.write(END_BYTE);
 
 	for(int pos = 0; pos < count; pos++){
 	intervalos[pos]=(1000000L/((vevals[pos])*128L));
@@ -187,6 +178,9 @@ void runExperiment() {
       // Print header
       Serial.println("\n---------------------------------------------");
       Serial.println("Value;Current;Cycle;Scan_Rate;Interval");
+
+      // Pack the data and send it to the Android app
+      String pack = "";
 
       //Start the forward scan
 			for(val = 0; val <= 255; val++){
@@ -209,7 +203,20 @@ void runExperiment() {
 
 				current = (double)c/1023*5/resistor;
 				Serial.println(current, 10);
-				}
+
+                // Add the data to the pack
+                pack += String(val) + ";" + String(c)+ "\n";
+
+                // Send the data to the Android app every 10 cycles
+                if (n % 20 == 0) {
+                    bluetooth.println(pack);
+                    pack = "";
+                }
+            }
+
+            // Send the remaining data to the Android app
+            bluetooth.println(pack);
+            pack = "";
 
 			//Start the reverse scan
 			for(val = 255; val >= 0; val--){
@@ -233,7 +240,20 @@ void runExperiment() {
 				
 				current = (double)c/1023*5/resistor;
 				Serial.println(current, 10);
-			}
+
+                // Add the data to the pack
+                pack += String(val) + ";" + String(c)+ "\n";
+
+                // Send the data to the Android app every 10 cycles
+                if (n % 20 == 0) {
+                    bluetooth.println(pack);
+                    pack = "";
+                }
+            }
+            
+            // Send the remaining data to the Android app
+            bluetooth.println(pack);
+            pack = "";
 			
 			n=n+1;
 		}
@@ -244,7 +264,7 @@ void runExperiment() {
   playSound(2, 2000);
 
   // Print "done" at the end of the program
-  Serial.println("\n\nDone!");
+  Serial.println("END");
   delay(20000);
 }
 
