@@ -228,8 +228,7 @@ class _EditCustomProcedureState extends State<EditCustomProcedure> {
                       return AppLocalizations.of(context)!.invalidNumber;
                     } else if (double.parse(value) < -1 ||
                         double.parse(value) > 1) {
-                      return AppLocalizations.of(context)!.outOfRange(1, -1);
-                      // TODO: Add a realistic range
+                      return AppLocalizations.of(context)!.outOfRange(0.03, 0);
                     }
                     return null;
                   },

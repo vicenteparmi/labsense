@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:labsense/scripts/calculations.dart';
 import 'package:labsense/scripts/database.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -50,8 +51,8 @@ class _CreateModelState extends State<CreateModel> {
       return '0.00 s';
     }
 
-    // TODO: Implement the calculation of the duration
-    double duration = (finalPotential - initialPotential) / scanRate;
+    double duration = calculateDuration(
+        initialPotential, finalPotential, scanRate, cycleCount);
     duration *= cycleCount;
 
     return duration > 60

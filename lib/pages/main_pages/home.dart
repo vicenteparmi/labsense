@@ -10,7 +10,6 @@ import 'package:labsense/pages/experiment_models/create_new_model.dart';
 import 'package:labsense/pages/experiments/create_new_experiment.dart';
 import 'package:labsense/pages/experiments/query_list.dart';
 import 'package:labsense/pages/main_pages/settings.dart';
-import 'package:labsense/scripts/bluetooth_com.dart';
 import 'package:labsense/scripts/database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -81,32 +80,6 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: BottomAppBar(
-        color: Theme.of(context).colorScheme.primaryContainer,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            IconButton(
-              icon: const Icon(Icons.science_rounded),
-              onPressed: () {
-                listenToData().then((value) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(value),
-                  ));
-                });
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.grid_view_rounded),
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return const ExperimentsList(query: 'procedures');
-                })).then((value) => reloadContent());
-              },
-            ),
-          ],
-        ),
-      ),
       floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
             showModalBottomSheet(

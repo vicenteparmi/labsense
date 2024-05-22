@@ -159,10 +159,6 @@ void interpretData(String data) {
 void runExperiment() {
       // Print title
   Serial.println("\n---------------------------------------------");
-  for (int i = 5; i > 0; i--) {
-  	Serial.println("Starting in: " + String(i));
-  	delay(1000); // delay for 1 second
-  }
 
 	for(int pos = 0; pos < count; pos++){
 	intervalos[pos]=(1000000L/((vevals[pos])*128L));
@@ -264,7 +260,7 @@ void runExperiment() {
   playSound(2, 2000);
 
   // Print "done" at the end of the program
-  Serial.println("END");
+  bluetooth.print("END");
   delay(20000);
 }
 

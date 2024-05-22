@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
           }),
           useMaterial3: true,
         ),
-        themeMode: ThemeMode.system,
+        themeMode: ThemeMode.light,
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,

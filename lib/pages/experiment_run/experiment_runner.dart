@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:labsense/scripts/bluetooth_com.dart';
-import 'package:labsense/scripts/calculate_duration.dart';
+import 'package:labsense/scripts/calculations.dart';
 import 'package:labsense/scripts/database.dart';
 import 'package:step_tracker/step_tracker.dart';
 
@@ -31,6 +31,19 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
   String _stepTitle = 'Carregando dados...';
   double? _progress;
   int _currentStep = 0;
+  // List with 10 random colors
+  final List<Color> _colors = [
+    Colors.red,
+    Colors.blue,
+    Colors.green,
+    Colors.yellow,
+    Colors.purple,
+    Colors.orange,
+    Colors.pink,
+    Colors.teal,
+    Colors.indigo,
+    Colors.lime,
+  ];
   final StreamController<String> _streamController = StreamController<String>();
   List<List<double>> _data = [];
   List<NumericGroup> _groupList = [];
@@ -68,6 +81,7 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
     // and ask the device to run it.
     for (int index = 0; index < steps.length; index++) {
       final step = steps[index];
+      _currentStep = index;
 
       // Update progress
       _updateState(AppLocalizations.of(context)!.sendingData, null, index + 1);
@@ -75,8 +89,6 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
       // Send data to device
       await sendDataToDevice(
           '\$1!${step['cycle_count']}!${step['initial_potential']}!${step['final_potential']}!${step['start_potential']}!1!${step['scan_rate']}!${step['sweep_direction']}#');
-
-      _updateState(step['title'], 0.0, index + 2);
 
       // Calculate duration of the experiment
       double duration = calculateDuration(
@@ -87,6 +99,7 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
 
       // Start the experiment
       Future.delayed(const Duration(seconds: 3), () {
+        _updateState(step['title'], 0.0, index + 2);
         debugPrint('Starting the experiment');
         sendDataToDevice('\$2#');
       }).then((_) => Future.delayed(
@@ -160,11 +173,13 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
 
       _groupList = [
         NumericGroup(
-            id: 'Dados',
-            color: Theme.of(context).colorScheme.primary,
+            id: _currentStep.toString(),
+            color: _colors[_currentStep],
             seriesCategory: 'Dados',
             data: _data.map((e) {
-              return NumericData(domain: e[0], measure: e[1]);
+              return NumericData(
+                  domain: transformPotential(e[0]),
+                  measure: transformCurrent(e[1]));
             }).toList()),
       ];
 
@@ -179,7 +194,7 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
   void initState() {
     _fetchSteps();
     // Wait 1 second before running the experiment
-    Future.delayed(const Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 300), () {
       _runExperiment();
     });
 
@@ -293,11 +308,15 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
                         numericViewport: NumericViewport(
                           // Minimum value on _data
                           _data.isNotEmpty
-                              ? _data.map((e) => e[1]).reduce(min)
+                              ? _data
+                                  .map((e) => transformCurrent(e[1]))
+                                  .reduce(min)
                               : 0,
                           // Maximum value on _data
                           _data.isNotEmpty
-                              ? _data.map((e) => e[1]).reduce(max)
+                              ? _data
+                                  .map((e) => transformCurrent(e[1]))
+                                  .reduce(max)
                               : 1,
                         ),
                       ),
@@ -305,11 +324,15 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
                         numericViewport: NumericViewport(
                           // Minimum value on _data
                           _data.isNotEmpty
-                              ? _data.map((e) => e[0]).reduce(min)
+                              ? _data
+                                  .map((e) => transformPotential(e[0]))
+                                  .reduce(min)
                               : 0,
                           // Maximum value on _data
                           _data.isNotEmpty
-                              ? _data.map((e) => e[0]).reduce(max)
+                              ? _data
+                                  .map((e) => transformPotential(e[0]))
+                                  .reduce(max)
                               : 1,
                         ),
                       ),

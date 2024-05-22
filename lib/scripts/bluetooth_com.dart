@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -36,24 +35,4 @@ Future<List<String>> getConnectedDevice() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   List<String> device = prefs.getStringList('connectedDevice') ?? [];
   return device;
-}
-
-/// Liten to data from a Bluetooth device.
-Future<String> listenToData() async {
-  // Get address from shared preferences
-  String address = await getConnectedDevice().then((value) => value[1]);
-
-  BluetoothConnection connection = await BluetoothConnection.toAddress(address);
-
-  String result = '';
-
-  connection.input!.listen((Uint8List data) {
-    result += ascii.decode(data);
-  }).onDone(() {
-    connection.finish();
-    debugPrint('Connection closed');
-  });
-
-  // Return the result after the connection is closed
-  return result;
 }
