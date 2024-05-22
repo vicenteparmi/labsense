@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:labsense/components/no_connected_devices_dialog.dart';
 import 'package:labsense/pages/experiment_run/experiment_runner.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -35,24 +36,7 @@ class _SetRunInfoState extends State<SetRunInfo> {
                   showDialog(
                     context: context,
                     builder: (context) {
-                      return AlertDialog(
-                        title: Text(
-                            AppLocalizations.of(context)!.noDevicesConnected),
-                        content: Text(AppLocalizations.of(context)!
-                            .noDevicesConnectedMessage),
-                        icon: const Icon(
-                          Icons.power_off_rounded,
-                          size: 48.0,
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text(AppLocalizations.of(context)!.ok),
-                          ),
-                        ],
-                      );
+                      return const NoConnectedDevicesDialog();
                     },
                   );
                   return;

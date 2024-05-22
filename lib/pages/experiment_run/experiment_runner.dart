@@ -1,15 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 import 'dart:typed_data';
-import 'package:d_chart/d_chart.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:labsense/scripts/bluetooth_com.dart';
 import 'package:labsense/scripts/calculations.dart';
 import 'package:labsense/scripts/database.dart';
-import 'package:step_tracker/step_tracker.dart';
 
 class ExperimentRunner extends StatefulWidget {
   final int experimentId;
@@ -31,22 +29,8 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
   String _stepTitle = 'Carregando dados...';
   double? _progress;
   int _currentStep = 0;
-  // List with 10 random colors
-  final List<Color> _colors = [
-    Colors.red,
-    Colors.blue,
-    Colors.green,
-    Colors.yellow,
-    Colors.purple,
-    Colors.orange,
-    Colors.pink,
-    Colors.teal,
-    Colors.indigo,
-    Colors.lime,
-  ];
-  final StreamController<String> _streamController = StreamController<String>();
-  List<List<double>> _data = [];
-  List<NumericGroup> _groupList = [];
+  List<List<List<double>>> _data = [];
+  int _currentStepController = 0;
 
   /// Fetches the steps for the experiment from the database.
   void _fetchSteps() {
@@ -72,6 +56,7 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
       _stepTitle = title;
       _progress = progress;
       _currentStep = step;
+      _currentStepController = step > steps.length ? steps.length - 1 : step;
     });
   }
 
@@ -81,10 +66,11 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
     // and ask the device to run it.
     for (int index = 0; index < steps.length; index++) {
       final step = steps[index];
-      _currentStep = index;
+
+      debugPrint('Step: $index/${steps.length}');
 
       // Update progress
-      _updateState(AppLocalizations.of(context)!.sendingData, null, index + 1);
+      _updateState(AppLocalizations.of(context)!.sendingData, null, index);
 
       // Send data to device
       await sendDataToDevice(
@@ -99,11 +85,11 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
 
       // Start the experiment
       Future.delayed(const Duration(seconds: 3), () {
-        _updateState(step['title'], 0.0, index + 2);
+        _updateState(step['title'], 0.0, index);
         debugPrint('Starting the experiment');
         sendDataToDevice('\$2#');
-      }).then((_) => Future.delayed(
-          const Duration(seconds: 3), () => _handleStreamData()));
+      }).then((_) =>
+          Future.delayed(const Duration(seconds: 3), () => _listenData(index)));
 
       // Animate progress bar
       for (int i = 0; i < 100; i++) {
@@ -115,7 +101,7 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
       }
 
       // Update state to show that the current step has finished
-      _updateState(AppLocalizations.of(context)!.stepFinished, 1.0, index + 2);
+      _updateState(AppLocalizations.of(context)!.stepFinished, 1.0, index);
     }
 
     // Update state to show that the experiment has finished
@@ -124,7 +110,7 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
   }
 
   /// Function to listen the data from the device.
-  Future<void> _listenData() async {
+  Future<void> _listenData(int index) async {
     String adress = await getConnectedDevice().then((value) => value[1]);
     BluetoothConnection connection =
         await BluetoothConnection.toAddress(adress);
@@ -134,13 +120,11 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
     connection.input!.listen((Uint8List data) {
       result += ascii.decode(data);
 
-      // Send data to the stream controller every 2 seconds to update the graph
-      Future.delayed(const Duration(seconds: 3), () {
-        _streamController.add(result);
-      });
+      // Add data to state
+      _handleStreamData(index, result);
 
       // Close the connection if the data is "END"
-      if (ascii.decode(data).contains('END')) {
+      if (ascii.decode(data).contains('E')) {
         connection.finish();
         // Disconnect from the device
         debugPrint('Connection closed');
@@ -152,41 +136,30 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
     });
   }
 
-  Future<void> _handleStreamData() async {
-    await _listenData();
+  Future<void> _handleStreamData(int index, String data) async {
+    List<List<String>> parsedValues = data
+        .split('\n')
+        .map((e) => e.split(';'))
+        .where((element) => element.length == 2)
+        .toList();
 
-    _streamController.stream.listen((data) {
-      // Parse data and update the graph
-      // The data is a list of "\n" separated values
-      // Each value is separated by ";", with two values per line
-      // The first value is the potential and the second value is the current
-      List<List<String>> parsedValues = data
-          .split('\n')
-          .map((e) => e.split(';'))
-          .where((element) => element.length == 2)
-          .toList();
+    // Convert the parsed values to a list of doubles
+    List<List<double>> values = parsedValues.map((e) {
+      try {
+        return [double.parse(e[0]), double.parse(e[1])];
+      } catch (error) {
+        print('Error parsing double: $error, $e');
+        return [double.parse(e[0]), double.parse('0')];
+      }
+    }).toList();
 
-      // Convert the parsed values to a list of doubles
-      List<List<double>> values = parsedValues
-          .map((e) => [double.parse(e[0]), double.parse(e[1])])
-          .toList();
-
-      _groupList = [
-        NumericGroup(
-            id: _currentStep.toString(),
-            color: _colors[_currentStep],
-            seriesCategory: 'Dados',
-            data: _data.map((e) {
-              return NumericData(
-                  domain: transformPotential(e[0]),
-                  measure: transformCurrent(e[1]));
-            }).toList()),
-      ];
-
-      // Update the graph
-      setState(() {
-        _data = values;
-      });
+    // Update the graph
+    setState(() {
+      if (_data.length <= index + 1) {
+        _data.add(values);
+      } else {
+        _data[index] = values;
+      }
     });
   }
 
@@ -207,6 +180,7 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.executing),
         automaticallyImplyLeading: false,
+        scrolledUnderElevation: 0,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(8.0),
           child: Padding(
@@ -225,14 +199,6 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
           ),
         ),
         actions: [
-          // Debug button
-          IconButton(
-            icon: const Icon(Icons.bug_report_outlined),
-            onPressed: () {
-              // Show not implemented snackbar
-              sendDataToDevice('\$2#');
-            },
-          ),
           // Stop button
           IconButton(
             icon: const Icon(Icons.stop_circle_outlined),
@@ -292,75 +258,166 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
           // Display experiment name and description
           Expanded(
             child: ListView(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
               children: [
+                const SizedBox(height: 16),
                 // Space for graph, title and steps.
-                SizedBox(
-                  height: 300,
-                  width: double.infinity,
-                  child: AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: DChartScatterN(
-                      groupList: _groupList,
-                      layoutMargin: LayoutMargin(16, 16, 16, 16),
-                      measureAxis: MeasureAxis(
-                        numericViewport: NumericViewport(
-                          // Minimum value on _data
-                          _data.isNotEmpty
-                              ? _data
-                                  .map((e) => transformCurrent(e[1]))
-                                  .reduce(min)
-                              : 0,
-                          // Maximum value on _data
-                          _data.isNotEmpty
-                              ? _data
-                                  .map((e) => transformCurrent(e[1]))
-                                  .reduce(max)
-                              : 1,
-                        ),
-                      ),
-                      domainAxis: DomainAxis(
-                        numericViewport: NumericViewport(
-                          // Minimum value on _data
-                          _data.isNotEmpty
-                              ? _data
-                                  .map((e) => transformPotential(e[0]))
-                                  .reduce(min)
-                              : 0,
-                          // Maximum value on _data
-                          _data.isNotEmpty
-                              ? _data
-                                  .map((e) => transformPotential(e[0]))
-                                  .reduce(max)
-                              : 1,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16.0),
+                _Chart(data: _data),
+                const SizedBox(height: 16),
                 ListTile(
                   title: Text(
                     widget.name,
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   subtitle: Text(widget.description,
-                      maxLines: 3, overflow: TextOverflow.ellipsis),
+                      maxLines: 5, overflow: TextOverflow.fade),
                 ),
-                const SizedBox(height: 16.0),
                 // Steps
-                StepTracker(steps: [
-                  for (final step in steps)
-                    Steps(
-                      title: Text(step['title']),
-                      description: step['brief_description'],
-                    ),
-                ])
+                Stepper(
+                  connectorThickness: 2.0,
+                  physics: const NeverScrollableScrollPhysics(),
+                  steps: [
+                    for (int i = 0; i < steps.length; i++)
+                      Step(
+                          title: Text(
+                              '${AppLocalizations.of(context)!.step} ${i + 1}: ${steps[i]['title']}',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.titleMedium!),
+                          content: SizedBox(
+                              width: double.infinity,
+                              child: Card(
+                                color: Color.lerp(
+                                    Theme.of(context).colorScheme.surface,
+                                    Theme.of(context)
+                                        .colorScheme
+                                        .primaryContainer,
+                                    0.5),
+                                margin: EdgeInsets.zero,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                          AppLocalizations.of(context)!
+                                              .runDescription,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleSmall!),
+                                      Text(steps[i]['brief_description']),
+                                    ],
+                                  ),
+                                ),
+                              )),
+                          state: i < _currentStep
+                              ? StepState.complete
+                              : StepState.indexed,
+                          isActive: i == _currentStep || i < _currentStep),
+                  ],
+                  currentStep: _currentStepController,
+                  onStepTapped: (value) => setState(() {
+                    _currentStepController = value;
+                  }),
+                  controlsBuilder: (context, details) {
+                    return ButtonBar(
+                      children: [
+                        // Export button
+                        OutlinedButton.icon(
+                            onPressed: () {
+                              // Open a new screen to export the data
+                            },
+                            icon: const Icon(Icons.archive_outlined),
+                            label: Text(AppLocalizations.of(context)!.export)),
+                      ],
+                    );
+                  },
+                ),
               ],
             ),
           )
         ],
+      ),
+    );
+  }
+}
+
+class _Chart extends StatelessWidget {
+  const _Chart({
+    required List<List<List<double>>> data,
+  }) : _data = data;
+
+  final List<List<List<double>>> _data;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: SizedBox(
+        height: 300.0,
+        width: double.infinity,
+        child: ScatterChart(
+          ScatterChartData(
+            scatterSpots: _data
+                .map((e) => e.map((point) => ScatterSpot(
+                      transformPotential(point[0]),
+                      transformCurrent(point[1]),
+                      show: true,
+                      dotPainter: FlDotCirclePainter(
+                        color: Theme.of(context).colorScheme.primary,
+                        radius: 2.0,
+                      ),
+                    )))
+                .expand((element) => element)
+                .toList(),
+            scatterTouchData: ScatterTouchData(
+              touchTooltipData: ScatterTouchTooltipData(
+                getTooltipItems: (touchedSpots) {
+                  return ScatterTooltipItem(
+                    '${touchedSpots.x.toInt()} V, ${touchedSpots.y.toInt()} A',
+                    bottomMargin: 32.0,
+                    textStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                        color: Theme.of(context).colorScheme.onSecondary),
+                  );
+                },
+              ),
+            ),
+            borderData: FlBorderData(
+              border: Border.all(
+                color: Theme.of(context).colorScheme.onSurface,
+                width: 1.0,
+              ),
+            ),
+            titlesData: FlTitlesData(
+              leftTitles: AxisTitles(
+                axisNameWidget: Text(
+                  '${AppLocalizations.of(context)!.current} (A)',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                sideTitles: const SideTitles(
+                  showTitles: true,
+                  reservedSize: 52.0,
+                ),
+              ),
+              bottomTitles: AxisTitles(
+                axisNameWidget: Text(
+                  '${AppLocalizations.of(context)!.potential} (V)',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                sideTitles: const SideTitles(
+                  showTitles: true,
+                  reservedSize: 28.0,
+                ),
+              ),
+              topTitles:
+                  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              rightTitles:
+                  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            ),
+          ),
+          swapAnimationDuration: Duration.zero,
+        ),
       ),
     );
   }

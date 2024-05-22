@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:labsense/components/no_connected_devices_dialog.dart';
 import 'package:labsense/pages/experiment_run/set_run_info.dart';
 import 'package:labsense/pages/main_pages/home.dart';
+import 'package:labsense/scripts/bluetooth_com.dart';
 import 'package:labsense/scripts/database.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -113,6 +115,19 @@ class _ExperimentViewContent extends StatelessWidget {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          // Check if the device is connected
+          getConnectedDevice().then((value) {
+            print("Connected devices: $value");
+            if (value.isEmpty) {
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return const NoConnectedDevicesDialog();
+                  });
+              return;
+            }
+          });
+
           // Navigate to the experiment procedure page
           Navigator.of(context).push(
             PageRouteBuilder(
