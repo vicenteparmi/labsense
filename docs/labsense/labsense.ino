@@ -20,6 +20,9 @@ int a = 10; // Pin for controlling the potentiostat
 float ct = A0; // Pin for current measurement (ADC)
 int soundPort = 5; // Pin for sound output
 
+// Variable for bluetooth communication
+int packageSize = 10;
+
 // Variables for the potentiostat
 int val = 0; // Variable for storing the analog value
 float c = 0; // Variable for storing the current value
@@ -145,6 +148,9 @@ void interpretData(String data) {
                 // Print the start message
                 bluetooth.println("$2#");
                 Serial.println("Starting the experiment");
+
+                // Wait for 3 seconds
+                delay(3000);
             
                 // Start the experiment
                 runExperiment();
@@ -187,31 +193,31 @@ void runExperiment() {
 				c =analogRead(ct);
 				Serial.print(";");
 				Serial.print(c);
-				Serial.print(";");
-				Serial.print(n);
-				Serial.print(";");
-				Serial.print(vevals[pos]);
-				Serial.print(";");
-				Serial.print(intervalos[pos]);
-				Serial.print(";");
-				Serial.print((float)val/255*2-1, 3);
-				Serial.print(";");
+				// Serial.print(";");
+				// Serial.print(n);
+				// Serial.print(";");
+				// Serial.print(vevals[pos]);
+				// Serial.print(";");
+				// Serial.print(intervalos[pos]);
+				// Serial.print(";");
+				// Serial.print((float)val/255*2-1, 3);
+				// Serial.print(";");
 
-				current = (double)c/1023*5/resistor;
-				Serial.println(current, 10);
+				// current = (double)c/1023*5/resistor;
+				// Serial.println(current, 10);
 
                 // Add the data to the pack
                 pack += String(val) + ";" + String(c)+ "\n";
 
-                // Send the data to the Android app every 10 cycles
-                if (n % 20 == 0) {
-                    bluetooth.println(pack);
+                // Send the data to the Android app every n cycles
+                if (n % packageSize == 0) {
+                    bluetooth.print(pack);
                     pack = "";
                 }
             }
 
             // Send the remaining data to the Android app
-            bluetooth.println(pack);
+            bluetooth.print(pack);
             pack = "";
 
 			//Start the reverse scan
@@ -224,31 +230,31 @@ void runExperiment() {
 				c =analogRead(ct);
 				Serial.print(";");
 				Serial.print(c);
-				Serial.print(";");
-				Serial.print(n);
-				Serial.print(";");
-				Serial.print(vevals[pos]);
-				Serial.print(";");
-				Serial.print(intervalos[pos]);
-				Serial.print(";");
-				Serial.print((float)val/255*2-1, 3);
-				Serial.print(";");
+				// Serial.print(";");
+				// Serial.print(n);
+				// Serial.print(";");
+				// Serial.print(vevals[pos]);
+				// Serial.print(";");
+				// Serial.print(intervalos[pos]);
+				// Serial.print(";");
+				// Serial.print((float)val/255*2-1, 3);
+				// Serial.print(";");
 				
-				current = (double)c/1023*5/resistor;
-				Serial.println(current, 10);
+				// current = (double)c/1023*5/resistor;
+				// Serial.println(current, 10);
 
                 // Add the data to the pack
                 pack += String(val) + ";" + String(c)+ "\n";
 
                 // Send the data to the Android app every 10 cycles
-                if (n % 20 == 0) {
-                    bluetooth.println(pack);
+                if (n % packageSize == 0) {
+                    bluetooth.print(pack);
                     pack = "";
                 }
             }
             
             // Send the remaining data to the Android app
-            bluetooth.println(pack);
+            bluetooth.print(pack);
             pack = "";
 			
 			n=n+1;
