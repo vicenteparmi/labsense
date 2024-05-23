@@ -8,6 +8,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:labsense/scripts/bluetooth_com.dart';
 import 'package:labsense/scripts/calculations.dart';
 import 'package:labsense/scripts/database.dart';
+import 'package:sqflite/sqflite.dart';
 
 class ExperimentRunner extends StatefulWidget {
   final int experimentId;
@@ -31,21 +32,22 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
   int _currentStep = 0;
   List<List<List<double>>> _data = [];
   int _currentStepController = 0;
+  int index = 0;
 
   /// Fetches the steps for the experiment from the database.
-  void _fetchSteps() {
+  Future<void> _fetchSteps() async {
     // load data from database
-    openMyDatabase().then((db) {
-      db
-          .query('custom_procedures',
-              where: 'experiment_id = ?',
-              whereArgs: [widget.experimentId],
-              orderBy: 'experiment_order')
-          .then((value) {
-        setState(() {
-          steps = value;
-        });
-      });
+    Database db = await openMyDatabase();
+
+    // Get the data from the database
+    List<Map<String, dynamic>> value = await db.query('custom_procedures',
+        where: 'experiment_id = ?',
+        whereArgs: [widget.experimentId],
+        orderBy: 'experiment_order');
+
+    // Convert the data to a list of maps
+    setState(() {
+      steps = value;
     });
   }
 
@@ -64,49 +66,57 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
   Future<void> _runExperiment() async {
     // For each step in the experiment, send data to the device
     // and ask the device to run it.
-    for (int index = 0; index < steps.length; index++) {
-      final step = steps[index];
+    final step = steps[index];
 
-      debugPrint('Step: $index/${steps.length}');
+    // Update progress
+    _updateState(AppLocalizations.of(context)!.sendingData, null, index);
 
-      // Update progress
-      _updateState(AppLocalizations.of(context)!.sendingData, null, index);
+    // Send data to device
+    await sendDataToDevice(
+        '\$1!${step['cycle_count']}!${step['initial_potential']}!${step['final_potential']}!${step['start_potential']}!1!${step['scan_rate']}!${step['sweep_direction']}#');
 
-      // Send data to device
-      await sendDataToDevice(
-          '\$1!${step['cycle_count']}!${step['initial_potential']}!${step['final_potential']}!${step['start_potential']}!1!${step['scan_rate']}!${step['sweep_direction']}#');
+    // Calculate duration of the experiment
+    double duration = calculateDuration(
+        double.parse(step['initial_potential']),
+        double.parse(step['final_potential']),
+        double.parse(step['scan_rate']),
+        int.parse(step['cycle_count']));
 
-      // Calculate duration of the experiment
-      double duration = calculateDuration(
-          double.parse(step['initial_potential']),
-          double.parse(step['final_potential']),
-          double.parse(step['scan_rate']),
-          int.parse(step['cycle_count']));
+    // Start the experiment
+    await Future.delayed(const Duration(seconds: 5), () {
+      _updateState(step['title'], 0.0, index);
+      debugPrint('Starting the experiment');
+      sendDataToDevice('\$2#');
+    }).then((_) async {
+      // Listen to the data from the device
+      await Future.delayed(
+          const Duration(seconds: 5), () async => _listenData(index));
+    });
 
-      // Start the experiment
-      Future.delayed(const Duration(seconds: 3), () {
-        _updateState(step['title'], 0.0, index);
-        debugPrint('Starting the experiment');
-        sendDataToDevice('\$2#');
-      }).then((_) =>
-          Future.delayed(const Duration(seconds: 3), () => _listenData(index)));
-
-      // Animate progress bar
-      for (int i = 0; i < 100; i++) {
-        await Future.delayed(Duration(seconds: duration.toInt() ~/ 100), () {
-          setState(() {
-            _progress = i / 100;
-          });
+    // Animate progress bar
+    for (int i = 0; i < 100; i++) {
+      await Future.delayed(Duration(seconds: duration.toInt() ~/ 100), () {
+        setState(() {
+          _progress = i / 100;
         });
-      }
-
-      // Update state to show that the current step has finished
-      _updateState(AppLocalizations.of(context)!.stepFinished, 1.0, index);
+      });
     }
+  }
 
-    // Update state to show that the experiment has finished
-    _updateState(AppLocalizations.of(context)!.experimentFinished, 1.0,
-        steps.length + 1);
+  void _shouldRunAgain(int index) {
+    // Update state to show that the current step has finished
+    _updateState(AppLocalizations.of(context)!.stepFinished, 1.0, index);
+
+    // Move to the next step if there is one
+    if (index < steps.length - 1) {
+      index++;
+      debugPrint('Moving to the next step: $index');
+      Future.delayed(const Duration(seconds: 5), () => _runExperiment());
+    } else {
+      // Finish the experiment
+      _updateState(AppLocalizations.of(context)!.experimentFinished, 1.0,
+          steps.length - 1);
+    }
   }
 
   /// Function to listen the data from the device.
@@ -127,12 +137,13 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
       if (ascii.decode(data).contains('E')) {
         connection.finish();
         // Disconnect from the device
-        debugPrint('Connection closed');
+        debugPrint('Connection closed onEnd');
+        _shouldRunAgain(index);
         return;
       }
     }).onDone(() {
       connection.finish();
-      debugPrint('Connection closed');
+      debugPrint('Connection closed onDone');
     });
   }
 
@@ -165,11 +176,7 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
 
   @override
   void initState() {
-    _fetchSteps();
-    // Wait 1 second before running the experiment
-    Future.delayed(const Duration(milliseconds: 300), () {
-      _runExperiment();
-    });
+    _fetchSteps().then((_) => _runExperiment());
 
     super.initState();
   }
@@ -327,6 +334,7 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
                         OutlinedButton.icon(
                             onPressed: () {
                               // Open a new screen to export the data
+                              print('Exporting data...');
                             },
                             icon: const Icon(Icons.archive_outlined),
                             label: Text(AppLocalizations.of(context)!.export)),

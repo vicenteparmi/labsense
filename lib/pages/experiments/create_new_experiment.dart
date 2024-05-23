@@ -72,6 +72,10 @@ class _CreateExperimentState extends State<CreateExperiment> {
 
   // Add a new procedure
   void _openAddProcedureDialog(BuildContext context) {
+    FocusScope.of(context).unfocus();
+
+    HapticFeedback.lightImpact();
+
     showModalBottomSheet(
       context: context,
       enableDrag: true,

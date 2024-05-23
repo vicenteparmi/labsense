@@ -22,6 +22,6 @@ double transformPotential(double potential) {
 
 /// Transform the given [current] to a real current value.
 double transformCurrent(double current) {
-  // TODO: Fix the formula
-  return (current / 1023) * 5 * 12000;
+  return current;
+  //return 3.91007E-7 * current - 2E-4;
 }

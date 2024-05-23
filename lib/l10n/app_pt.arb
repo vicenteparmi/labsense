@@ -94,8 +94,8 @@
 
   "cyclicVoltammetry": "Voltametria cíclica",
   "linearSweepVoltammetry": "Voltametria de varredura linear",
-  "initialPotential": "Potencial inicial",
-  "finalPotential": "Potencial final",
+  "initialPotential": "Potencial mínimo",
+  "finalPotential": "Potencial máximo",
   "startPotential": "Potencial inicial",
   "scanRate": "Taxa de varredura",
   "sweepDirection": "Direção de varredura",
@@ -159,5 +159,10 @@
   "version": "Versão",
   "developedby": "Desenvolvido por",
   "licenses": "Licenças",
-  "licensesDescription": "Licenças de código aberto usadas neste aplicativo"
+  "licensesDescription": "Licenças de código aberto usadas neste aplicativo",
+  "dataManagement": "Gerenciamento de dados",
+  "deleteAllData": "Apagar todos os dados",
+  "deleteAllDataDescription": "Apagar todos os dados armazenados no aplicativo. Esta ação não pode ser desfeita.",
+  "deleteAllDataConfirmation": "Você tem certeza que deseja apagar todos os dados? Esta ação não pode ser desfeita.",
+  "allDataDeleted": "Todos os dados foram apagados"
 }

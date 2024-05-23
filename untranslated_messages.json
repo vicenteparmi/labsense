@@ -111,6 +111,11 @@
     "version",
     "developedby",
     "licenses",
-    "licensesDescription"
+    "licensesDescription",
+    "dataManagement",
+    "deleteAllData",
+    "deleteAllDataDescription",
+    "deleteAllDataConfirmation",
+    "allDataDeleted"
   ]
 }

@@ -164,8 +164,8 @@ void interpretData(String data)
         bluetooth.println("$2#");
         Serial.println("Starting the experiment");
 
-        // Wait for 3 seconds
-        delay(3000);
+        // Wait for 5 seconds
+        delay(5000);
 
         // Start the experiment
         runExperiment();
@@ -260,7 +260,6 @@ void runExperiment()
 
     // Print "done" at the end of the program
     bluetooth.write("E");
-    delay(20000);
 }
 
 void playSound(int count, int frequency)

@@ -318,8 +318,8 @@ class _CreateModelState extends State<CreateModel> {
                                   decoration: InputDecoration(
                                     label: Text(
                                         '${AppLocalizations.of(context)!.initialPotential} (V)'),
-                                    icon: const Icon(
-                                        Icons.swipe_right_alt_rounded),
+                                    icon:
+                                        const Icon(Icons.vertical_align_bottom_rounded),
                                     border: const OutlineInputBorder(),
                                   ),
                                   textInputAction: TextInputAction.next,
@@ -346,7 +346,7 @@ class _CreateModelState extends State<CreateModel> {
                                     label: Text(
                                         '${AppLocalizations.of(context)!.finalPotential} (V)'),
                                     icon: const Icon(
-                                        Icons.swipe_left_alt_rounded),
+                                        Icons.vertical_align_top_rounded),
                                     border: const OutlineInputBorder(),
                                   ),
                                   textInputAction: TextInputAction.next,

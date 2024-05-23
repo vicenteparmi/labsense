@@ -43,6 +43,20 @@ Future<Database> openMyDatabase() async {
           experiment_id INTEGER,
           experiment_order INTEGER)
       ''');
+
+      // Add some default preocedures to the database on the "procedures" table
+      await db.insert('procedures', {
+        'title': 'Voltametria cíclica',
+        'brief_description':
+            'Voltametria cíclica com 3 ciclos, varrendo de -1.0V a 1.0V a 0.1V/s, com potencial inicial de 0.0V, no sentido da oxidação.',
+        'model_type': 'cyclic_voltammetry',
+        'initial_potential': '-1.0',
+        'final_potential': '1.0',
+        'start_potential': '0.0',
+        'scan_rate': '0.1',
+        'cycle_count': '3',
+        'sweep_direction': 1,
+      });
     },
   );
   return database;

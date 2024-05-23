@@ -28,6 +28,8 @@ class _EditCustomProcedureState extends State<EditCustomProcedure> {
       TextEditingController();
   final TextEditingController _finalPotentialController =
       TextEditingController();
+  final TextEditingController _startPotentialController =
+      TextEditingController();
   final TextEditingController _scanRateController = TextEditingController();
   final TextEditingController _cycleCountController = TextEditingController();
   bool _sweepDirection = false;
@@ -44,6 +46,8 @@ class _EditCustomProcedureState extends State<EditCustomProcedure> {
           widget.procedure['initial_potential'].toString();
       _finalPotentialController.text =
           widget.procedure['final_potential'].toString();
+      _startPotentialController.text =
+          widget.procedure['start_potential'].toString();
       _scanRateController.text = widget.procedure['scan_rate'].toString();
       _cycleCountController.text = widget.procedure['cycle_count'].toString();
       _sweepDirection = widget.procedure['sweep_direction'] == 0 ? false : true;
@@ -172,7 +176,7 @@ class _EditCustomProcedureState extends State<EditCustomProcedure> {
                   decoration: InputDecoration(
                     label: Text(
                         '${AppLocalizations.of(context)!.initialPotential} (V)'),
-                    icon: const Icon(Icons.swipe_right_alt_rounded),
+                    icon: const Icon(Icons.vertical_align_bottom_rounded),
                     border: const OutlineInputBorder(),
                   ),
                   keyboardType: TextInputType.number,
@@ -194,11 +198,33 @@ class _EditCustomProcedureState extends State<EditCustomProcedure> {
                   decoration: InputDecoration(
                     label: Text(
                         '${AppLocalizations.of(context)!.finalPotential} (V)'),
-                    icon: const Icon(Icons.swipe_left_alt_rounded),
+                    icon: const Icon(Icons.vertical_align_top_rounded),
                     border: const OutlineInputBorder(),
                   ),
                   keyboardType: TextInputType.number,
                   controller: _finalPotentialController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return AppLocalizations.of(context)!.requiredField;
+                    } else if (double.tryParse(value) == null) {
+                      return AppLocalizations.of(context)!.invalidNumber;
+                    } else if (double.parse(value) < -1 ||
+                        double.parse(value) > 1) {
+                      return AppLocalizations.of(context)!.outOfRange(1, -1);
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12.0),
+                TextFormField(
+                  decoration: InputDecoration(
+                    label: Text(
+                        '${AppLocalizations.of(context)!.startPotential} (V)'),
+                    icon: const Icon(Icons.start_rounded),
+                    border: const OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  controller: _startPotentialController,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return AppLocalizations.of(context)!.requiredField;
