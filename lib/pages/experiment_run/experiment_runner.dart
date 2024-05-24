@@ -3,12 +3,15 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:labsense/scripts/bluetooth_com.dart';
 import 'package:labsense/scripts/calculations.dart';
 import 'package:labsense/scripts/database.dart';
 import 'package:sqflite/sqflite.dart';
+
+import 'export_data.dart';
 
 class ExperimentRunner extends StatefulWidget {
   final int experimentId;
@@ -33,6 +36,7 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
   List<List<List<double>>> _data = [];
   int _currentStepController = 0;
   int index = 0;
+  bool finished = false;
 
   /// Fetches the steps for the experiment from the database.
   Future<void> _fetchSteps() async {
@@ -116,6 +120,9 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
       // Finish the experiment
       _updateState(AppLocalizations.of(context)!.experimentFinished, 1.0,
           steps.length - 1);
+      setState(() {
+        finished = true;
+      });
     }
   }
 
@@ -334,7 +341,28 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
                         OutlinedButton.icon(
                             onPressed: () {
                               // Open a new screen to export the data
-                              print('Exporting data...');
+                              showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return ExportData(
+                                            data: _data[index],
+                                            procedureName: widget.name)
+                                        .animate()
+                                        .slideY(
+                                          begin: 0.5,
+                                          end: 0.0,
+                                          duration:
+                                              const Duration(milliseconds: 400),
+                                          curve: Curves.easeInOut,
+                                        )
+                                        .fade(
+                                          duration:
+                                              const Duration(milliseconds: 300),
+                                          begin: 0.0,
+                                          end: 1.0,
+                                          curve: Curves.easeInOut,
+                                        );
+                                  });
                             },
                             icon: const Icon(Icons.archive_outlined),
                             label: Text(AppLocalizations.of(context)!.export)),

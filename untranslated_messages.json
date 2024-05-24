@@ -106,6 +106,7 @@
     "step",
     "potential",
     "current",
+    "saveAs",
     "settings",
     "abouttheapp",
     "version",
@@ -116,6 +117,7 @@
     "deleteAllData",
     "deleteAllDataDescription",
     "deleteAllDataConfirmation",
-    "allDataDeleted"
+    "allDataDeleted",
+    "exportData"
   ]
 }

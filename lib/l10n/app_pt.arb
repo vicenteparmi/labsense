@@ -150,6 +150,7 @@
   "step": "Etapa",
   "potential": "Potencial",
   "current": "Corrente",
+  "saveAs": "Salvar como",
 
   "settings": "Configurações",
   "@settings": {
@@ -164,5 +165,7 @@
   "deleteAllData": "Apagar todos os dados",
   "deleteAllDataDescription": "Apagar todos os dados armazenados no aplicativo. Esta ação não pode ser desfeita.",
   "deleteAllDataConfirmation": "Você tem certeza que deseja apagar todos os dados? Esta ação não pode ser desfeita.",
-  "allDataDeleted": "Todos os dados foram apagados"
+  "allDataDeleted": "Todos os dados foram apagados",
+
+  "exportData": "Exportar dados"
 }
