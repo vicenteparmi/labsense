@@ -12,7 +12,7 @@
 /// - [count] is the number of cycles.
 double calculateDuration(
     double initialP, double finalP, double rate, int count) {
-  return (finalP.abs() + initialP.abs()) / rate * count;
+  return (finalP.abs() + initialP.abs()) / rate * count * 2;
 }
 
 /// Transform the given [potential] to a real voltage value.

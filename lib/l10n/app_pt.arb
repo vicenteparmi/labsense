@@ -97,7 +97,7 @@
   "initialPotential": "Potencial mínimo",
   "finalPotential": "Potencial máximo",
   "startPotential": "Potencial inicial",
-  "scanRate": "Taxa de varredura",
+  "scanRate": "Velocidade de varredura",
   "sweepDirection": "Direção de varredura",
   "sweepDirectionForward": "Oxidação",
   "sweepDirectionBackward": "Redução",
@@ -108,7 +108,7 @@
   "potentialInterval": "Intervalo de potencial",
   "chronoamperometry": "Cronoamperometria",
   "howToCyclicVoltammetry": "O que é a voltametria cíclica?",
-  "cyclicVoltammetryExplanation": "A voltametria cíclica é uma técnica poderosa em eletroquímica usada para investigar os processos de transferência de elétrons de uma molécula. Ele funciona aplicando uma tensão gradualmente crescente a um eletrodo de trabalho mergulhado em uma solução, revertendo a tensão e trazendo-a de volta ao ponto inicial. Enquanto isso, a resposta atual é medida. Isso cria um gráfico característico denominado voltamograma cíclico, que revela informações sobre a capacidade da molécula de ganhar ou perder elétrons (atividade redox), a facilidade dessas transferências de elétrons e os níveis de energia envolvidos.",
+  "cyclicVoltammetryExplanation": "A voltametria cíclica é uma técnica poderosa em eletroquímica usada para investigar os processos de transferência de elétrons de uma molécula ou íon. Ela funciona aplicando um potencial variável a um eletrodo de trabalho, gerando uma corrente que pode ser correlacionada proporcionalmente à concentração do analito. Esta técnica também é muito empregada na caracterização dos processos de oxirredução revelando informações importantes sobre o analito.",
 
   "startExperiment": "Iniciar experimento",
   "newExecution": "Nova execução",

@@ -36,72 +36,28 @@ class _CreateModelState extends State<CreateModel> {
 
   // Compute the duration and potential interval of the experiment
   String duration = '0.00 s';
-  String potentialInterval = '0.00 s';
 
   String computeDuration() {
     // Compute the duration of the experiment
-    double initialPotential =
-        double.tryParse(_initialPotentialController.text) ?? 0.0;
-    double finalPotential =
-        double.tryParse(_finalPotentialController.text) ?? 0.0;
-    double scanRate = double.tryParse(_scanRateController.text) ?? 0.0;
-    int cycleCount = int.tryParse(_cycleCountController.text) ?? 0;
+    double? initialPotential =
+        double.tryParse(_initialPotentialController.text);
+    double? finalPotential = double.tryParse(_finalPotentialController.text);
+    double? scanRate = double.tryParse(_scanRateController.text);
+    int? cycleCount = int.tryParse(_cycleCountController.text);
 
-    if (initialPotential == 0.0 || finalPotential == 0.0 || scanRate == 0.0) {
+    if (initialPotential == null ||
+        finalPotential == null ||
+        scanRate == null ||
+        cycleCount == null) {
       return '0.00 s';
     }
 
     double duration = calculateDuration(
         initialPotential, finalPotential, scanRate, cycleCount);
-    duration *= cycleCount;
 
     return duration > 60
         ? '${(duration / 60).toStringAsFixed(0)} min ${(duration % 60).toStringAsFixed(0)} s'
         : '${duration.toStringAsFixed(2)} s';
-  }
-
-  String computeInterval() {
-    // Compute the interval between each potential
-    double initialPotential =
-        double.tryParse(_initialPotentialController.text) ?? 0.0;
-    double finalPotential =
-        double.tryParse(_finalPotentialController.text) ?? 0.0;
-    double scanRate = double.tryParse(_scanRateController.text) ?? 0.0;
-
-    if (initialPotential == 0.0 || finalPotential == 0.0 || scanRate == 0.0) {
-      return '0.00 s';
-    }
-
-    return '${((finalPotential - initialPotential) / scanRate).toStringAsFixed(2)} s';
-  }
-
-  @override
-  void initState() {
-    // Compute the duration of the experiment when the required fields are filled
-    _initialPotentialController.addListener(() {
-      setState(() {
-        duration = computeDuration();
-        potentialInterval = computeInterval();
-      });
-    });
-    _finalPotentialController.addListener(() {
-      setState(() {
-        duration = computeDuration();
-        potentialInterval = computeInterval();
-      });
-    });
-    _scanRateController.addListener(() {
-      setState(() {
-        duration = computeDuration();
-        potentialInterval = computeInterval();
-      });
-    });
-    _cycleCountController.addListener(() {
-      setState(() {
-        duration = computeDuration();
-      });
-    });
-    super.initState();
   }
 
   @override
@@ -148,13 +104,6 @@ class _CreateModelState extends State<CreateModel> {
                                 border: const OutlineInputBorder()),
                             textInputAction: TextInputAction.next,
                             textCapitalization: TextCapitalization.sentences,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return AppLocalizations.of(context)!
-                                    .requiredField;
-                              }
-                              return null;
-                            },
                           ),
                           const SizedBox(height: 12.0),
                           TextFormField(
@@ -169,13 +118,6 @@ class _CreateModelState extends State<CreateModel> {
                             keyboardType: TextInputType.multiline,
                             textCapitalization: TextCapitalization.sentences,
                             maxLines: 3,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return AppLocalizations.of(context)!
-                                    .requiredField;
-                              }
-                              return null;
-                            },
                           ),
                           const SizedBox(height: 24.0),
                           Text(AppLocalizations.of(context)!.experimentType,
@@ -318,13 +260,16 @@ class _CreateModelState extends State<CreateModel> {
                                   decoration: InputDecoration(
                                     label: Text(
                                         '${AppLocalizations.of(context)!.initialPotential} (V)'),
-                                    icon:
-                                        const Icon(Icons.vertical_align_bottom_rounded),
+                                    icon: const Icon(
+                                        Icons.vertical_align_bottom_rounded),
                                     border: const OutlineInputBorder(),
                                   ),
                                   textInputAction: TextInputAction.next,
                                   keyboardType: TextInputType.number,
                                   controller: _initialPotentialController,
+                                  onChanged: (value) => setState(() {
+                                    duration = computeDuration();
+                                  }),
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
                                       return AppLocalizations.of(context)!
@@ -352,6 +297,9 @@ class _CreateModelState extends State<CreateModel> {
                                   textInputAction: TextInputAction.next,
                                   keyboardType: TextInputType.number,
                                   controller: _finalPotentialController,
+                                  onChanged: (value) => setState(() {
+                                    duration = computeDuration();
+                                  }),
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
                                       return AppLocalizations.of(context)!
@@ -378,6 +326,9 @@ class _CreateModelState extends State<CreateModel> {
                                   textInputAction: TextInputAction.next,
                                   keyboardType: TextInputType.number,
                                   controller: _startPotentialController,
+                                  onChanged: (value) => setState(() {
+                                    duration = computeDuration();
+                                  }),
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
                                       return AppLocalizations.of(context)!
@@ -404,6 +355,9 @@ class _CreateModelState extends State<CreateModel> {
                                   textInputAction: TextInputAction.next,
                                   keyboardType: TextInputType.number,
                                   controller: _scanRateController,
+                                  onChanged: (value) => setState(() {
+                                    duration = computeDuration();
+                                  }),
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
                                       return AppLocalizations.of(context)!
@@ -509,14 +463,6 @@ class _CreateModelState extends State<CreateModel> {
                                               leading: const Icon(
                                                   Icons.timer_rounded),
                                             ),
-                                            ListTile(
-                                              title: Text(
-                                                  AppLocalizations.of(context)!
-                                                      .potentialInterval),
-                                              subtitle: Text(potentialInterval),
-                                              leading: const Icon(
-                                                  Icons.timelapse_rounded),
-                                            ),
                                           ],
                                         ),
                                     ],
@@ -537,10 +483,22 @@ class _CreateModelState extends State<CreateModel> {
                                 onPressed: () {
                                   // Validate form
                                   if (_formKey.currentState!.validate()) {
+                                    // Spare title
+                                    String spareTitle =
+                                        _modelType == 'cyclic_voltammetry'
+                                            ? AppLocalizations.of(context)!
+                                                .cyclicVoltammetry
+                                            : AppLocalizations.of(context)!
+                                                .chronoamperometry;
+
                                     // Save the experiment
                                     saveModel(
-                                        _titleController.text,
-                                        _briefDescriptionController.text,
+                                        _titleController.text == ""
+                                            ? spareTitle
+                                            : _titleController.text,
+                                        _briefDescriptionController.text == ""
+                                            ? "Descrição não informada"
+                                            : _briefDescriptionController.text,
                                         _modelType,
                                         _initialPotentialController.text,
                                         _finalPotentialController.text,
