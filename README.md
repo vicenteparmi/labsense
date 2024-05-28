@@ -55,7 +55,7 @@ Contributions are welcome. If you wish to contribute to the project, feel free t
 
 ### License
 
-This project is licensed under the MIT license. For more information, see the [LICENSE](LICENSE) file.
+This project is licensed under the MIT license. For more information, see the [LICENSE](LICENSE.md) file.
 
 ### Authorship
 
