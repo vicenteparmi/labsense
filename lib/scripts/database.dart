@@ -57,6 +57,18 @@ Future<Database> openMyDatabase() async {
         'cycle_count': '3',
         'sweep_direction': 1,
       });
+
+      // Create the results table
+      await db.execute('''
+        CREATE TABLE results (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          run_id INTEGER,
+          procedure_id INTEGER,
+          experiment_id INTEGER,
+          data TEXT,
+          created_time TEXT
+        )
+      ''');
     },
   );
   return database;

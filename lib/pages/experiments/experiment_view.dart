@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:labsense/components/no_connected_devices_dialog.dart';
+import 'package:labsense/pages/experiment_run/export_data.dart';
 import 'package:labsense/pages/experiment_run/set_run_info.dart';
 import 'package:labsense/pages/main_pages/home.dart';
 import 'package:labsense/scripts/bluetooth_com.dart';
@@ -27,6 +28,8 @@ class _ExperimentViewState extends State<ExperimentView> {
     'icon': '',
     'procedures': [],
   };
+
+  List<Map<String, dynamic>> results = [];
 
   Future<void> queryExperimentData() async {
     Database db = await openMyDatabase();
@@ -60,6 +63,22 @@ class _ExperimentViewState extends State<ExperimentView> {
     }
   }
 
+  void queryResults() async {
+    Database db = await openMyDatabase();
+    List<Map<String, dynamic>> result = await db.query(
+      'results',
+      where: 'experiment_id = ?',
+      whereArgs: [widget.experimentId.toString()],
+      orderBy: 'created_time DESC',
+    );
+
+    if (result.isNotEmpty) {
+      setState(() {
+        results = result;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -87,6 +106,7 @@ class _ExperimentViewState extends State<ExperimentView> {
         icon: IconData(int.parse(experiment['icon'] ?? '0xe5c4'),
             fontFamily: 'MaterialIcons'),
         steps: experiment['procedures'] ?? [],
+        results: results,
       );
     }
   }
@@ -100,6 +120,7 @@ class _ExperimentViewContent extends StatelessWidget {
   final String createdTime;
   final IconData icon;
   final List<Map<String, dynamic>> steps;
+  final List<Map<String, dynamic>> results;
 
   const _ExperimentViewContent(
       {required this.experimentId,
@@ -108,7 +129,8 @@ class _ExperimentViewContent extends StatelessWidget {
       required this.lastUpdated,
       required this.createdTime,
       required this.icon,
-      required this.steps});
+      required this.steps,
+      required this.results});
 
   @override
   Widget build(BuildContext context) {
@@ -340,7 +362,158 @@ class _ExperimentViewContent extends StatelessWidget {
               ),
             ),
           ),
+          // Group results by "run_id" in cards
+          results.isNotEmpty
+              ? SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (BuildContext context, int index) {
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 24.0,
+                          vertical: 8.0,
+                        ),
+                        child: ListTile(
+                          title: Text(
+                            '${AppLocalizations.of(context)!.createNewExperiment} ${results[index]['run_id']}',
+                          ),
+                          subtitle: Text(
+                            '${AppLocalizations.of(context)!.creationDate} ${DateFormat('dd/MM/yyyy').format(DateTime.parse(results[index]['created_time']))}',
+                          ),
+                          leading: const Icon(Icons.data_usage_rounded),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => ResultsView(
+                                  runId: results[index]['run_id'],
+                                  experimentId: experimentId,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    childCount: results.length,
+                  ),
+                )
+              : SliverToBoxAdapter(
+                  child: Card(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 24.0,
+                  ),
+                  child: ListTile(
+                    title: Text(AppLocalizations.of(context)!.noResults),
+                    leading: Icon(Icons.info_rounded,
+                        color: Theme.of(context).colorScheme.primary),
+                  ),
+                )),
         ],
+      ),
+    );
+  }
+}
+
+class ResultsView extends StatefulWidget {
+  final int runId;
+  final int experimentId;
+
+  const ResultsView(
+      {super.key, required this.runId, required this.experimentId});
+
+  @override
+  State<ResultsView> createState() => _ResultsViewState();
+}
+
+class _ResultsViewState extends State<ResultsView> {
+  List<Map<String, dynamic>> results = [];
+
+  void queryResults() async {
+    Database db = await openMyDatabase();
+    List<Map<String, dynamic>> result = await db.query(
+      'results',
+      where: 'run_id = ? AND experiment_id = ?',
+      whereArgs: [widget.runId, widget.experimentId],
+    );
+
+    if (result.isNotEmpty) {
+      setState(() {
+        results = result;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    queryResults();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.results),
+      ),
+      body: ListView.builder(
+        itemCount: results.length,
+        itemBuilder: (BuildContext context, int index) {
+          return Card(
+            margin: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 8.0,
+            ),
+            child: ListTile(
+              title: Text(
+                '${AppLocalizations.of(context)!.procedures} ${results[index]['procedure_id']}',
+              ),
+              subtitle: Text(
+                '${AppLocalizations.of(context)!.creationDate} ${DateFormat('dd/MM/yyyy').format(
+                  DateTime.parse(results[index]['created_time']),
+                )}',
+              ),
+              leading: const Icon(Icons.data_usage_rounded),
+              onTap: () {
+                // Parse the data as a list of lists of doubles
+                List<List<double>> data = results[index]['data']
+                    .split('\n')
+                    .map((e) =>
+                        e.split(',').map((e) => double.parse(e)).toList())
+                    .toList();
+
+                // Get title
+                String title =
+                    '${AppLocalizations.of(context)!.procedures} ${results[index]['procedure_id']}';
+
+                // Navigate to the results page
+                Navigator.of(context).push(
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        ExportData(
+                      data: data,
+                      procedureName: title,
+                    ),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) {
+                      var begin = const Offset(1.0, 0.0);
+                      var end = Offset.zero;
+                      var tween = Tween(begin: begin, end: end);
+
+                      var curvedAnimation = CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeInOut,
+                      );
+
+                      return SlideTransition(
+                        position: tween.animate(curvedAnimation),
+                        child: child,
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+          );
+        },
       ),
     );
   }

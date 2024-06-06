@@ -381,6 +381,56 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
                     );
                   },
                 ),
+                // If finished, show done button as active
+                ButtonBar(
+                  alignment: MainAxisAlignment.center,
+                  children: [
+                    FilledButton.icon(
+                      onPressed: finished
+                          ? () {
+                              // Get run id
+                              int runId = DateTime.now().millisecondsSinceEpoch;
+
+                              openMyDatabase().then((db) {
+                                // For each step, insert the data to the database
+                                for (int i = 0; i < steps.length; i++) {
+                                  db.insert('results', {
+                                    'run_id': runId,
+                                    'procedure_id': steps[i]['id'],
+                                    'experiment_id': widget.experimentId,
+                                    'data': jsonEncode(_data[i]),
+                                    'created_time':
+                                        DateTime.now().toIso8601String()
+                                  });
+
+                                  // Update the experiment with the last updated time
+                                  db.update(
+                                      'experiments',
+                                      {
+                                        'last_updated':
+                                            DateTime.now().toIso8601String()
+                                      },
+                                      where: 'id = ?',
+                                      whereArgs: [widget.experimentId]);
+                                }
+
+                                // Show snackbar
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Dados salvos com sucesso'),
+                                  ),
+                                );
+
+                                // Go back to the experiment list
+                                Navigator.of(context).pop();
+                              });
+                            }
+                          : null,
+                      icon: const Icon(Icons.done),
+                      label: Text(AppLocalizations.of(context)!.saveAndFinish),
+                    ),
+                  ],
+                ),
               ],
             ),
           )

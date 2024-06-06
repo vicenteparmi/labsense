@@ -153,6 +153,9 @@
   "saveAs": "Salvar como",
   "next": "Próximo",
   "data": "Dados",
+  "done": "Concluído",
+  "saveAndFinish": "Finalizar e salvar",
+  "noResults": "Nenhum resultado encontrado",
 
   "settings": "Configurações",
   "@settings": {
