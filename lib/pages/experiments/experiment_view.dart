@@ -117,7 +117,7 @@ class _ExperimentViewContent extends StatelessWidget {
         onPressed: () {
           // Check if the device is connected
           getConnectedDevice().then((value) {
-            print("Connected devices: $value");
+            debugPrint("Connected devices: $value");
             if (value.isEmpty) {
               showDialog(
                   context: context,
@@ -205,10 +205,11 @@ class _ExperimentViewContent extends StatelessWidget {
                   );
                 },
                 icon: const Icon(Icons.delete_forever_rounded)),
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.edit_rounded),
-            ),
+            // TODO: Implement the edit functionality
+            // IconButton(
+            //   onPressed: () {},
+            //   icon: const Icon(Icons.edit_rounded),
+            // ),
           ],
         ),
       ),

@@ -34,7 +34,7 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
   String _stepTitle = 'Carregando dados...';
   double? _progress;
   int _currentStep = 0;
-  List<List<List<double>>> _data = [];
+  final List<List<List<double>>> _data = [];
   int _currentStepController = 0;
   int index = 0;
   bool finished = false;
@@ -169,7 +169,7 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
       try {
         return [double.parse(e[0]), double.parse(e[1])];
       } catch (error) {
-        print('Error parsing double: $error, $e');
+        debugPrint('Error parsing double: $error, $e');
         return [double.parse(e[0]), double.parse('0')];
       }
     }).toList();
