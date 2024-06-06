@@ -137,6 +137,24 @@ class SettingsPage extends StatelessWidget {
               applicationVersion: '1.0.0',
             ),
           ),
+          ListTile(
+            title: Text(AppLocalizations.of(context)!.privacyPolicy),
+            subtitle: Text(AppLocalizations.of(context)!.tapToOpen),
+            leading: const Icon(Icons.privacy_tip),
+            trailing: const Icon(Icons.open_in_new),
+            onTap: () => launchUrl(
+              Uri.parse('https://github.com/vicenteparmi/labsense/tree/main/docs/legal'),
+            ),
+          ),
+          ListTile(
+            title: Text(AppLocalizations.of(context)!.termsOfUse),
+            subtitle: Text(AppLocalizations.of(context)!.tapToOpen),
+            leading: const Icon(Icons.description),
+            trailing: const Icon(Icons.open_in_new),
+            onTap: () => launchUrl(
+              Uri.parse('https://github.com/vicenteparmi/labsense/tree/main/docs/legal'),
+            ),
+          ),
           // Section title
           Padding(
             padding: const EdgeInsets.symmetric(

@@ -427,6 +427,137 @@ class _HomeState extends State<Home> {
                 }
               },
             ),
+            // "Resources" section
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24.0,
+                  vertical: 16.0,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.book_rounded,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: 8.0),
+                    Text(
+                      AppLocalizations.of(context)!.resources,
+                      style:
+                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // How to build the potentiostat card with the image
+            SliverToBoxAdapter(
+              child: Card(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                margin: const EdgeInsets.symmetric(horizontal: 24.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16.0),
+                ),
+                child: InkWell(
+                  onTap: () {},
+                  borderRadius: BorderRadius.circular(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      ClipPath(
+                        clipper: ShapeBorderClipper(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16.0),
+                          ),
+                        ),
+                        child: Image.asset(
+                          'assets/images/howtobuild.jpg',
+                          fit: BoxFit.cover,
+                          height: 200.0,
+                          width: double.infinity,
+                          opacity: const AlwaysStoppedAnimation(0.7),
+                          semanticLabel: 'Imagem do potenciostato',
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              AppLocalizations.of(context)!.howToBuildIt,
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 8.0),
+                            Text(
+                              AppLocalizations.of(context)!
+                                  .howToBuildItSubtitle,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Reference artiles
+            SliverToBoxAdapter(
+              child: Card(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                margin:
+                    const EdgeInsets.only(top: 16.0, left: 24.0, right: 24.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16.0),
+                ),
+                child: InkWell(
+                  onTap: () {},
+                  borderRadius: BorderRadius.circular(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      ClipPath(
+                        clipper: ShapeBorderClipper(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16.0),
+                          ),
+                        ),
+                        child: Image.asset(
+                          'assets/images/paper.jpg',
+                          fit: BoxFit.cover,
+                          height: 200.0,
+                          width: double.infinity,
+                          opacity: const AlwaysStoppedAnimation(0.5),
+                          semanticLabel: 'Potentiostat picture',
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              AppLocalizations.of(context)!.referenceArticles,
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 8.0),
+                            Text(
+                              AppLocalizations.of(context)!
+                                  .referenceArticlesSubtitle,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Add some space at the end
             const SliverToBoxAdapter(
               child: SizedBox(height: 92.0),
             ),

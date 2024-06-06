@@ -193,6 +193,15 @@
   "calibrationTutorialPage6": "Com os três pontos de cada curva de calibração, podemos ajustar uma reta que será usada para converter os dados de corrente lidos por nosso sistema em dados de corrente reais. O ajuste é feito pela equação y = ax + b, onde a é o coeficiente angular e b é o coeficiente linear. Esses valores devem ser inseridos nas configurações do aplicativo para que a conversão seja feita corretamente.",
   "calibrationTutorialPage7": "Agora que você já sabe como calibrar o sistema, você pode realizar experimentos com mais precisão. Se você tiver alguma dúvida, entre em contato conosco.",
 
+  "privacyPolicy": "Política de privacidade",
+  "tapToOpen": "Toque para abrir",
+  "termsOfUse": "Termos de uso",
+
+  "resources": "Recursos",
+  "howToBuildIt": "Como construir?",
+  "howToBuildItSubtitle": "Aprenda a construir o potenciostato para ser usado com o aplicativo por meio de um guia passo a passo",
+  "referenceArticles": "Artigos de referência",
+  "referenceArticlesSubtitle": "Leia artigos científicos que embasam o funcionamento do aplicativo e do potenciostato",
 
   "exportData": "Exportar dados"
 }
