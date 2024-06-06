@@ -9,7 +9,7 @@ import 'package:labsense/components/nothing_found_card.dart';
 import 'package:labsense/pages/experiment_models/create_new_model.dart';
 import 'package:labsense/pages/experiments/create_new_experiment.dart';
 import 'package:labsense/pages/experiments/query_list.dart';
-import 'package:labsense/pages/main_pages/settings.dart';
+import 'package:labsense/pages/main_pages/settings/settings.dart';
 import 'package:labsense/scripts/database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';

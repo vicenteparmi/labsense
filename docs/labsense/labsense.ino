@@ -194,10 +194,12 @@ void runExperiment()
         Serial.println("\n---------------------------------------------");
         Serial.println("Value;Current;Cycle;Scan_Rate;Interval");
 
+        analogWrite(a, 83); // The first test is with -1 V. (-1V = 255, 0V = 127, 1V = 0)
+
         // Start the forward scan
         for (val = 0; val <= 255; val++)
         {
-            analogWrite(a, val);
+            // analogWrite(a, val); // Change back when trying to run the experiment normaly
             Serial.print(val);
             delay(interval);
             // c = ((0.00195*(analogRead(ct))-1)*1000); // Current reading outputs in uA!!!
@@ -225,7 +227,7 @@ void runExperiment()
         // Start the reverse scan
         for (val = 255; val >= 0; val--)
         {
-            analogWrite(a, val);
+            // analogWrite(a, val); // Change back when trying to run the experiment normaly
             Serial.print(val);
             delay(interval);
             // c = ((0.00195*(analogRead(ct))-1)*1000); // Current reading outputs in uA!!!

@@ -21,7 +21,8 @@ double transformPotential(double potential) {
 }
 
 /// Transform the given [current] to a real current value.
-double transformCurrent(double current) {
-  return current;
-  //return 3.91007E-7 * current - 2E-4;
+/// As we need to get the [slope] and [intercept] values from the calibration
+/// settings, we need to pass them as arguments.
+double transformCurrent(double current, double slope, double intercept) {
+  return slope * current + intercept;
 }

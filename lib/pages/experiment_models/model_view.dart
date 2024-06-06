@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:labsense/pages/main_pages/home.dart';
 import 'package:labsense/scripts/database.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-/// This page displays the details of a model
-/// It is not yet implemented fully, needs to be redesigned
-/// and the data needs to be fetched from the database.
-/// TODO: Fetch data from the database
+/// This page displays the details of a model, including its title, description, and procedure.
 class ModelView extends StatefulWidget {
   final int modelId;
 
@@ -58,13 +54,17 @@ class _ModelViewState extends State<ModelView> {
         ),
       );
     } else {
-      return const _ModelViewContent();
+      return _ModelViewContent(model);
     }
   }
 }
 
 class _ModelViewContent extends StatelessWidget {
-  const _ModelViewContent();
+  const _ModelViewContent(
+    this.model,
+  );
+
+  final Map<String, dynamic> model;
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +81,7 @@ class _ModelViewContent extends StatelessWidget {
                     return AlertDialog(
                       title:
                           Text(AppLocalizations.of(context)!.experimentTitle),
-                      content: Text("Model title"),
+                      content: Text(model['title']),
                       actions: <Widget>[
                         TextButton(
                           child: Text(AppLocalizations.of(context)!.close),
@@ -95,15 +95,10 @@ class _ModelViewContent extends StatelessWidget {
                 );
               },
               child: Text(
-                'Model title',
+                model['title'],
                 style: Theme.of(context).textTheme.titleLarge,
                 overflow: TextOverflow.ellipsis,
               ),
-            ),
-            Text(
-              AppLocalizations.of(context)!.lastUpdated(DateFormat('dd/MM/yyyy')
-                  .format(DateTime.parse('2021-09-01'))),
-              style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
         ),
@@ -189,7 +184,7 @@ class _ModelViewContent extends StatelessWidget {
                       ),
                       const SizedBox(height: 8.0),
                       Text(
-                        'Model description',
+                        model['description'],
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],

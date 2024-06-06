@@ -151,6 +151,7 @@
   "potential": "Potencial",
   "current": "Corrente",
   "saveAs": "Salvar como",
+  "next": "Próximo",
 
   "settings": "Configurações",
   "@settings": {
@@ -159,6 +160,9 @@
   "abouttheapp": "Sobre o aplicativo",
   "version": "Versão",
   "developedby": "Desenvolvido por",
+  "developerName": "Vicente K. Parmigiani, LabSensE UFPR",
+  "developer1": "Vicente Kalinoski Parmigiani",
+  "developer2": "LabSensE UFPR",
   "licenses": "Licenças",
   "licensesDescription": "Licenças de código aberto usadas neste aplicativo",
   "dataManagement": "Gerenciamento de dados",
@@ -166,6 +170,25 @@
   "deleteAllDataDescription": "Apagar todos os dados armazenados no aplicativo. Esta ação não pode ser desfeita.",
   "deleteAllDataConfirmation": "Você tem certeza que deseja apagar todos os dados? Esta ação não pode ser desfeita.",
   "allDataDeleted": "Todos os dados foram apagados",
+  "calibration": "Calibração",
+  "calibrationCurve": "Curva de calibração",
+  "calibrationCurveDescription": "Ajuste a curva de calibração para converter os dados de potencial em corrente",
+  "calibrationTutorial": "Tutorial de calibração",
+  "calibrationTutorialDescription": "Aprenda a calibrar o dispositivo para obter resultados precisos",
+  "slope": "Coeficiente angular",
+  "slopeDescription": "Inclinação da curva de calibração",
+  "intercept": "Coeficiente linear",
+  "interceptDescription": "Ponto em que a curva de calibração intercepta o eixo y",
+  "decimalSeparator": "Use ponto como separador decimal",
+
+  "calibrationTutorialPage1": "Inicie a calibração realizando uma cronoamperometria em um sistema conhecido. Neste exemplo, usaremos um resistor de 10kΩ. Essa cronoamperometria deve ser realizada em um equipamento capaz de realizar leituras precisas de corrente e em pequenos valores. Utilizamos um potenciostato comercial para realizar essa medição.",
+  "calibrationTutorialPage2": "Conecte (no caso do potenciostato comercial) os eletrodos de trabalho em um lado e o contra eletrodo e eletrodo de referência no outro. Eles devem ser ligados em série no sistema.",
+  "calibrationTutorialPage3": "Ajuste o potencial para -1V e inicie a cronoamperometria. O gráfico gerado deve ser uma linha reta, pois a corrente deve ser constante. O valor da corrente deve ser anotado para a calibração futura. Você pode realizar uma média de várias leituras para obter um valor mais preciso.",
+  "calibrationTutorialPage4": "Agora, ajuste o potencial para 0V e em seguida para 1V. Anote os valores de corrente para cada potencial. Esses valores serão usados para ajustar a curva de calibração.",
+  "calibrationTutorialPage5": "Agora vamo repetir o mesmo procedimento para o potenciostato LabSensE. Conecte o eletrodo de trabalho e o de referência em um lado e o contra eletrodo no outro. Clique nos botões abaixo para realizar as medidas e aguarde.",
+  "calibrationTutorialPage6": "Com os três pontos de cada curva de calibração, podemos ajustar uma reta que será usada para converter os dados de corrente lidos por nosso sistema em dados de corrente reais. O ajuste é feito pela equação y = ax + b, onde a é o coeficiente angular e b é o coeficiente linear. Esses valores devem ser inseridos nas configurações do aplicativo para que a conversão seja feita corretamente.",
+  "calibrationTutorialPage7": "Agora que você já sabe como calibrar o sistema, você pode realizar experimentos com mais precisão. Se você tiver alguma dúvida, entre em contato conosco.",
+
 
   "exportData": "Exportar dados"
 }

@@ -9,6 +9,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:labsense/scripts/bluetooth_com.dart';
 import 'package:labsense/scripts/calculations.dart';
 import 'package:labsense/scripts/database.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'export_data.dart';
@@ -37,6 +38,8 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
   int _currentStepController = 0;
   int index = 0;
   bool finished = false;
+  double slope = 1.0;
+  double intercept = 0.0;
 
   /// Fetches the steps for the experiment from the database.
   Future<void> _fetchSteps() async {
@@ -185,6 +188,14 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
   void initState() {
     _fetchSteps().then((_) => _runExperiment());
 
+    // Get calibration values
+    SharedPreferences.getInstance().then((prefs) {
+      setState(() {
+        slope = prefs.getDouble('cal_slope') ?? 1.0;
+        intercept = prefs.getDouble('cal_intercept') ?? 0.0;
+      });
+    });
+
     super.initState();
   }
 
@@ -276,7 +287,7 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
               children: [
                 const SizedBox(height: 16),
                 // Space for graph, title and steps.
-                _Chart(data: _data),
+                _Chart(data: _data, slope: slope, intercept: intercept),
                 const SizedBox(height: 16),
                 ListTile(
                   title: Text(
@@ -381,10 +392,14 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
 
 class _Chart extends StatelessWidget {
   const _Chart({
-    required List<List<List<double>>> data,
-  }) : _data = data;
+    required this.slope,
+    required this.intercept,
+    required this.data,
+  });
 
-  final List<List<List<double>>> _data;
+  final List<List<List<double>>> data;
+  final double slope;
+  final double intercept;
 
   @override
   Widget build(BuildContext context) {
@@ -395,10 +410,10 @@ class _Chart extends StatelessWidget {
         width: double.infinity,
         child: ScatterChart(
           ScatterChartData(
-            scatterSpots: _data
+            scatterSpots: data
                 .map((e) => e.map((point) => ScatterSpot(
                       transformPotential(point[0]),
-                      transformCurrent(point[1]),
+                      transformCurrent(point[1], slope, intercept),
                       show: true,
                       dotPainter: FlDotCirclePainter(
                         color: Theme.of(context).colorScheme.primary,
