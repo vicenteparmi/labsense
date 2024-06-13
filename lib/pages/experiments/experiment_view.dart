@@ -31,6 +31,48 @@ class _ExperimentViewState extends State<ExperimentView> {
 
   List<Map<String, dynamic>> results = [];
 
+  // List of icons to choose from
+  final List<IconData> icons = [
+    Icons.science_rounded,
+    Icons.biotech_rounded,
+    Icons.microwave_rounded,
+    Icons.lightbulb_rounded,
+    Icons.bolt_rounded,
+    Icons.bubble_chart_rounded,
+    Icons.bug_report_rounded,
+    Icons.water_drop_rounded,
+    Icons.air_rounded,
+    Icons.thermostat_rounded,
+    Icons.waves_rounded,
+    Icons.wb_sunny_rounded,
+    Icons.favorite_rounded,
+    Icons.star_rounded,
+    Icons.support,
+    Icons.emoji_objects_rounded,
+    Icons.emoji_nature_rounded,
+    Icons.emoji_food_beverage_rounded,
+    Icons.filter_vintage_rounded,
+    Icons.grass_rounded,
+    Icons.eco_rounded,
+    Icons.park_rounded,
+    Icons.science_outlined,
+    Icons.health_and_safety_rounded,
+    Icons.psychology_rounded,
+    Icons.spa_rounded,
+    Icons.solar_power_rounded,
+    Icons.water_damage_rounded,
+    Icons.fireplace_rounded,
+    Icons.reduce_capacity_rounded,
+    Icons.cleaning_services_rounded,
+    Icons.compost_rounded,
+    Icons.coronavirus_rounded,
+    Icons.masks_rounded,
+    Icons.sanitizer_rounded,
+    Icons.soap_rounded,
+    Icons.pest_control_rounded,
+    Icons.pest_control_rodent_rounded,
+  ];
+
   Future<void> queryExperimentData() async {
     Database db = await openMyDatabase();
     List<Map<String, dynamic>> result = await db.query(
@@ -103,8 +145,7 @@ class _ExperimentViewState extends State<ExperimentView> {
         description: experiment['brief_description'] ?? '',
         lastUpdated: experiment['last_updated'] ?? '',
         createdTime: experiment['created_time'] ?? '',
-        icon: IconData(int.parse(experiment['icon'] ?? '0xe5c4'),
-            fontFamily: 'MaterialIcons'),
+        icon: icons[experiment['icon'] ?? 0],
         steps: experiment['procedures'] ?? [],
         results: results,
       );

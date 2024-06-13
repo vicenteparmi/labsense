@@ -11,7 +11,7 @@ Future<Database> openMyDatabase() async {
       // Create table for experiments, each experiment has a title and a brief description, along
       // with a list of procedures inside it.
       await db.execute(
-          'CREATE TABLE experiments(id INTEGER PRIMARY KEY, title TEXT, brief_description TEXT, created_time TEXT, last_updated TEXT, icon TEXT)');
+          'CREATE TABLE experiments(id INTEGER PRIMARY KEY, title TEXT, brief_description TEXT, created_time TEXT, last_updated TEXT, icon INTEGER)');
       // Table for procedures, each procedure has a title, a brief description, a list of steps, and a list of models.
       await db.execute('''
         CREATE TABLE procedures (

@@ -504,7 +504,7 @@ class _CreateExperimentState extends State<CreateExperiment> {
                         saveExperiment(
                             _titleController.text,
                             _briefDescriptionController.text,
-                            selectedIcon,
+                            icons.indexOf(selectedIcon),
                             procedures);
                         Navigator.pop(context);
                       } else if (procedures.isEmpty &&
@@ -551,7 +551,7 @@ class _CreateExperimentState extends State<CreateExperiment> {
 }
 
 Future<void> saveExperiment(String title, String briefDescription,
-    IconData icon, List<Map<String, Object?>> procedures) async {
+    int icon, List<Map<String, Object?>> procedures) async {
   Database db = await openMyDatabase();
 
   await db.transaction((txn) async {
@@ -560,7 +560,8 @@ Future<void> saveExperiment(String title, String briefDescription,
       int experimentId = await txn.insert('experiments', {
         'title': title,
         'brief_description': briefDescription,
-        'icon': icon.codePoint,
+        // Icon index
+        'icon': icon,
         'created_time': DateTime.now().toString(),
         'last_updated': DateTime.now().toString(),
       });
