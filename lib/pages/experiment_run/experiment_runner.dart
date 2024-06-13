@@ -38,6 +38,7 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
   int _currentStepController = 0;
   int index = 0;
   bool finished = false;
+  bool enableSound = true;
   double slope = 1.0;
   double intercept = 0.0;
 
@@ -80,20 +81,24 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
 
     // Send data to device
     await sendDataToDevice(
-        '\$1!${step['cycle_count']}!${step['initial_potential']}!${step['final_potential']}!${step['start_potential']}!1!${step['scan_rate']}!${step['sweep_direction']}#');
+        '\$1!${step['cycle_count']}!${step['initial_potential']}!${step['final_potential']}!${step['start_potential']}!$enableSound!${step['scan_rate']}!${step['sweep_direction']}#');
 
     // Calculate duration of the experiment
     double duration = calculateDuration(
         double.parse(step['initial_potential']),
         double.parse(step['final_potential']),
         double.parse(step['scan_rate']),
-        int.parse(step['cycle_count']));
+        double.parse(step['start_potential']),
+        int.parse(step['cycle_count']),
+        step['model_type']);
 
     // Start the experiment
     await Future.delayed(const Duration(seconds: 5), () {
       _updateState(step['title'], 0.0, index);
       debugPrint('Starting the experiment');
-      sendDataToDevice('\$2#');
+      String dataToSend =
+          steps[index]['model_type'] == 'cyclic_voltammetry' ? '\$2#' : '\$3#';
+      sendDataToDevice(dataToSend);
     }).then((_) async {
       // Listen to the data from the device
       await Future.delayed(
@@ -188,11 +193,12 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
   void initState() {
     _fetchSteps().then((_) => _runExperiment());
 
-    // Get calibration values
+    // Get calibration values and enable sound
     SharedPreferences.getInstance().then((prefs) {
       setState(() {
         slope = prefs.getDouble('cal_slope') ?? 1.0;
         intercept = prefs.getDouble('cal_intercept') ?? 0.0;
+        enableSound = prefs.getBool('enable_sound') ?? true;
       });
     });
 
@@ -224,6 +230,38 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
           ),
         ),
         actions: [
+          // Sound button
+          IconButton(
+            icon: Icon(enableSound
+                ? Icons.volume_up_outlined
+                : Icons.volume_off_outlined),
+            tooltip: enableSound
+                ? AppLocalizations.of(context)!.disableSound
+                : AppLocalizations.of(context)!.enableSound,
+            onPressed: () {
+              // Toggle sound
+              SharedPreferences.getInstance().then((prefs) {
+                prefs.setBool('enable_sound', !enableSound);
+                setState(() {
+                  enableSound = !enableSound;
+                });
+              });
+
+              // Show snackbar warning
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content:
+                      Text(AppLocalizations.of(context)!.soundToggleMessage),
+                  action: SnackBarAction(
+                    label: AppLocalizations.of(context)!.ok,
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
           // Stop button
           IconButton(
             icon: const Icon(Icons.stop_circle_outlined),
@@ -287,7 +325,12 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
               children: [
                 const SizedBox(height: 16),
                 // Space for graph, title and steps.
-                _Chart(data: _data, slope: slope, intercept: intercept),
+                _Chart(
+                    data: _data,
+                    slope: slope,
+                    intercept: intercept,
+                    mode: steps[index]['model_type'],
+                    interval: double.parse(steps[index]['scan_rate'])),
                 const SizedBox(height: 16),
                 ListTile(
                   title: Text(
@@ -356,7 +399,18 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
                                   context: context,
                                   builder: (context) {
                                     return ExportData(
-                                            data: _data[index],
+                                            data: _data[index].map((e) {
+                                              return [
+                                                steps[index]['model_type'] ==
+                                                        'cyclic_voltammetry'
+                                                    ? transformPotential(e[0])
+                                                    : (e[0] *
+                                                        double.parse(
+                                                            steps[index]
+                                                                ['scan_rate'])),
+                                                e[1],
+                                              ];
+                                            }).toList(),
                                             procedureName: widget.name)
                                         .animate()
                                         .slideY(
@@ -445,11 +499,15 @@ class _Chart extends StatelessWidget {
     required this.slope,
     required this.intercept,
     required this.data,
+    required this.mode,
+    required this.interval,
   });
 
   final List<List<List<double>>> data;
   final double slope;
   final double intercept;
+  final String mode;
+  final double interval;
 
   @override
   Widget build(BuildContext context) {
@@ -462,7 +520,9 @@ class _Chart extends StatelessWidget {
           ScatterChartData(
             scatterSpots: data
                 .map((e) => e.map((point) => ScatterSpot(
-                      transformPotential(point[0]),
+                      mode == 'cyclic_voltammetry'
+                          ? transformPotential(point[0])
+                          : point[0] * interval,
                       transformCurrent(point[1], slope, intercept),
                       show: true,
                       dotPainter: FlDotCirclePainter(
@@ -503,7 +563,9 @@ class _Chart extends StatelessWidget {
               ),
               bottomTitles: AxisTitles(
                 axisNameWidget: Text(
-                  '${AppLocalizations.of(context)!.potential} (V)',
+                  mode == 'cyclic_voltammetry'
+                      ? '${AppLocalizations.of(context)!.potential} (V)'
+                      : '${AppLocalizations.of(context)!.time} (s)',
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 sideTitles: const SideTitles(

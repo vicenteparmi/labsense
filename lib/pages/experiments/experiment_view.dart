@@ -125,6 +125,7 @@ class _ExperimentViewState extends State<ExperimentView> {
   void initState() {
     super.initState();
     queryExperimentData();
+    queryResults();
   }
 
   @override
@@ -368,7 +369,8 @@ class _ExperimentViewContent extends StatelessWidget {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.only(
+                  top: 32.0, left: 24.0, right: 24.0, bottom: 8.0),
               child: Text(
                 AppLocalizations.of(context)!.procedures,
                 style: Theme.of(context).textTheme.titleLarge,
@@ -396,7 +398,8 @@ class _ExperimentViewContent extends StatelessWidget {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.only(
+                  top: 32.0, left: 24.0, right: 24.0, bottom: 8.0),
               child: Text(
                 AppLocalizations.of(context)!.results,
                 style: Theme.of(context).textTheme.titleLarge,
@@ -411,7 +414,7 @@ class _ExperimentViewContent extends StatelessWidget {
                       return Card(
                         margin: const EdgeInsets.symmetric(
                           horizontal: 24.0,
-                          vertical: 8.0,
+                          vertical: 4.0,
                         ),
                         child: ListTile(
                           title: Text(
@@ -522,8 +525,7 @@ class _ResultsViewState extends State<ResultsView> {
                     .toList();
 
                 // Get title
-                String title =
-                    '${AppLocalizations.of(context)!.procedures} ${results[index]['procedure_id']}';
+                String title = '${results[index]['procedure_id']}';
 
                 // Navigate to the results page
                 Navigator.of(context).push(

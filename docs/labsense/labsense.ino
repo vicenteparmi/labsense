@@ -64,12 +64,14 @@ void loop()
         if (RECIEVED == START_BYTE)
         {
             Serial.print("Recording data... ");
+            playSound(1, 1000);
             doUpdateStatus = true;
         }
         else if (RECIEVED == END_BYTE)
         {
             Serial.println("Data received!");
             Serial.println(data);
+            playSound(1, 3000);
             doUpdateStatus = false;
             interpretData(data);
             data = "";
@@ -154,7 +156,7 @@ void interpretData(String data)
     }
     else if (data[0] == '2')
     {
-        // Start the experiment
+        // Start the cyclic voltaammetry experiment
         // The data is in the format:
         // [2]
         // Example: 2
@@ -162,13 +164,30 @@ void interpretData(String data)
 
         // Print the start message
         bluetooth.println("$2#");
-        Serial.println("Starting the experiment");
+        Serial.println("Starting the experiment: cyclic voltammetry");
 
         // Wait for 5 seconds
         delay(5000);
 
         // Start the experiment
         runExperiment();
+    }
+    else if (data[0] == '3')
+    {
+        // Start the chronoamprometry experiment
+        // The data is in the format:
+        // [3]
+        // Example: 3
+        // This means that the experiment will start
+
+        // Print message
+        Serial.println("Starting the experiment: chronoamprometry");
+
+        // Wait for 5 seconds
+        delay(5000);
+
+        // Start the experiment
+        runChronoExperiment();
     }
     else
     {
@@ -185,7 +204,15 @@ void runExperiment()
     playSound(2, 2000);
     delay(1000);
 
-    while (n <= (cycle_count - 1))
+    // Obtain the max and min voltage, as well as the start voltage
+    // The voltage is recieved in the range of -1 to 1, so we need to convert it to the range of 0 to 255
+    const float max_voltage_run = (max_voltage + 1) * 127;
+    const float min_voltage_run = (min_voltage + 1) * 127;
+    const float start_voltage_run = (start_voltage + 1) * 127;
+
+    static bool foward = sweep_direction;
+
+    while (n <= (cycle_count - 1) * 2) // The number of cycles is multiplied by 2 because there are two scans per cycle, forward and reverse
     {
         // Buffer
         char buffer[16];
@@ -194,66 +221,112 @@ void runExperiment()
         Serial.println("\n---------------------------------------------");
         Serial.println("Value;Current;Cycle;Scan_Rate;Interval");
 
-        // analogWrite(a, 83); // The first test is with -1 V. (-1V = 255, 0V = 127, 1V = 0)
+        // Start the forward scan if the sweep direction is true
+        if (foward) {
 
-        // Start the forward scan
-        for (val = 0; val <= 255; val++)
-        {
-            analogWrite(a, val); // Change back when trying to run the experiment normaly
-            Serial.print(val);
-            delay(interval);
-            // c = ((0.00195*(analogRead(ct))-1)*1000); // Current reading outputs in uA!!!
-            c = analogRead(ct);
-            Serial.print(";");
-            Serial.print(c);
-            // Serial.print(";");
-            // Serial.print(n);
-            // Serial.print(";");
-            // Serial.print(vevals[pos]);
-            // Serial.print(";");
-            // Serial.print(intervals[pos]);
-            // Serial.print(";");
-            // Serial.print((float)val/255*2-1, 3);
-            // Serial.print(";");
+            // If is the first start on the start voltage, else start on the min voltage
+            static int start = 0;
+            if (n == 0) {
+                start = start_voltage_run;
+            } else {
+                start = min_voltage_run;
+            }
 
-            // current = (double)c/1023*5/resistor;
-            // Serial.println(current, 10);
+            for (val = start; val <= max_voltage_run; val++)
+            {
+                analogWrite(a, val);
+                Serial.print(val);
+                delay(interval);
+                c = analogRead(ct);
+                Serial.print(";");
+                Serial.print(c);
 
-            // Send the data to the Android app
-            snprintf(buffer, sizeof(buffer), "%d;%d\n", val, c);
-            bluetooth.write(buffer);
+                // Send the data to the Android app
+                snprintf(buffer, sizeof(buffer), "%d;%d\n", val, c);
+                bluetooth.write(buffer);
+            }
+        } else { // Start the reverse scan if the sweep direction is false
+            
+            // If is the first start on the start voltage, else start on the max voltage
+            static int start = 0;
+            if (n == 0) {
+                start = start_voltage_run;
+            } else {
+                start = max_voltage_run;
+            }
+
+            for (val = start; val >= min_voltage_run; val--)
+            {
+                analogWrite(a, val);
+                Serial.print(val);
+                delay(interval);
+                c = analogRead(ct);
+                Serial.print(";");
+                Serial.print(c);
+
+                // Send the data to the Android app
+                snprintf(buffer, sizeof(buffer), "%d;%d\n", val, c);
+                bluetooth.write(buffer);
+            }
         }
 
-        // Start the reverse scan
-        for (val = 255; val >= 0; val--)
-        {
-            analogWrite(a, val); // Change back when trying to run the experiment normaly
-            Serial.print(val);
-            delay(interval);
-            // c = ((0.00195*(analogRead(ct))-1)*1000); // Current reading outputs in uA!!!
+        // Change the direction
+        foward = !foward;
+        n += 1;
+    }
 
-            c = analogRead(ct);
-            Serial.print(";");
-            Serial.print(c);
-            // Serial.print(";");
-            // Serial.print(n);
-            // Serial.print(";");
-            // Serial.print(vevals[pos]);
-            // Serial.print(";");
-            // Serial.print(intervals[pos]);
-            // Serial.print(";");
-            // Serial.print((float)val/255*2-1, 3);
-            // Serial.print(";");
+    // Play sound at the end of the program
+    delay(2000);
+    playSound(2, 2000);
 
-            // current = (double)c/1023*5/resistor;
-            // Serial.println(current, 10);
+    // Print "done" at the end of the program
+    bluetooth.write("E");
+}
 
-            // Send the data to the Android app
-            snprintf(buffer, sizeof(buffer), "%d;%d\n", val, c);
-            bluetooth.write(buffer);
-        }
+void runChronoExperiment()
+{
+    // Print title
+    Serial.println("\n---------------------------------------------");
 
-        n = n + 1;
+    playSound(2, 2000);
+    delay(1000);
+
+    // In this experiment, the data saved is used as:
+    // [total_duration (s)][not used][not used][apply_voltage (V)]
+    // [enable_sound][measurement_interval (s)][not used]
+    // Example: 100!0!0!1!1!0.1!0
+    // This means that the total duration is 100s, the applied voltage is 1V,
+    // the sound is enabled, the measurement interval is 0.1s
+
+    // Execute the chronoamperometry experiment
+    int step = 0;
+    const float duration = cycle_count;
+    const float measurement_interval = scan_rate / 1000;
+    const float number_of_points = duration / measurement_interval;
+
+    // Buffer
+    char buffer[16];
+
+    // Apply the voltage
+    // The voltage is recieved in the range of -1 to 1, so we need to convert it to the range of 0 to 255
+    const int apply_voltage = (int)((start_voltage + 1) * 127);
+    analogWrite(a, apply_voltage);
+    
+    while (step < number_of_points) {
+
+        // Record the data
+        Serial.print(step);
+        delay(measurement_interval * 1000);
+        c = analogRead(ct);
+        Serial.print(";");
+        Serial.print(c);
+
+        // Send the data to the Android app
+        snprintf(buffer, sizeof(buffer), "%d;%d\n", step, c);
+        bluetooth.write(buffer);
+
+        // Increment the step
+        step++;
     }
 
     // Play sound at the end of the program

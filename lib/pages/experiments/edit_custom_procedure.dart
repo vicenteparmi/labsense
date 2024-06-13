@@ -41,17 +41,16 @@ class _EditCustomProcedureState extends State<EditCustomProcedure> {
         widget.procedure['brief_description'].toString();
     _titleController.text = widget.procedure['title'].toString();
 
-    if (widget.procedure['model_type'] == 'cyclic_voltammetry') {
-      _initialPotentialController.text =
-          widget.procedure['initial_potential'].toString();
-      _finalPotentialController.text =
-          widget.procedure['final_potential'].toString();
-      _startPotentialController.text =
-          widget.procedure['start_potential'].toString();
-      _scanRateController.text = widget.procedure['scan_rate'].toString();
-      _cycleCountController.text = widget.procedure['cycle_count'].toString();
-      _sweepDirection = widget.procedure['sweep_direction'] == 0 ? false : true;
-    }
+    _initialPotentialController.text =
+        widget.procedure['initial_potential'].toString();
+    _finalPotentialController.text =
+        widget.procedure['final_potential'].toString();
+    _startPotentialController.text =
+        widget.procedure['start_potential'].toString();
+    _scanRateController.text = widget.procedure['scan_rate'].toString();
+    _cycleCountController.text = widget.procedure['cycle_count'].toString();
+    _sweepDirection = widget.procedure['sweep_direction'] == 0 ? false : true;
+    
     super.initState();
   }
 
@@ -161,6 +160,7 @@ class _EditCustomProcedureState extends State<EditCustomProcedure> {
           ),
         ),
         // Change the procedure parameters
+        // Cyclic voltammetry
         if (widget.procedure['model_type'] == 'cyclic_voltammetry')
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -310,6 +310,88 @@ class _EditCustomProcedureState extends State<EditCustomProcedure> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return AppLocalizations.of(context)!.requiredField;
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+        // Chronoamperometry
+        if (widget.procedure['model_type'] == 'chronoamperometry')
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 12.0),
+                Text(AppLocalizations.of(context)!.experimentData,
+                    style: Theme.of(context).textTheme.titleMedium,
+                    textAlign: TextAlign.start),
+                const SizedBox(height: 12.0),
+                TextFormField(
+                  decoration: InputDecoration(
+                    label: Text(
+                        '${AppLocalizations.of(context)!.appliedPotential} (V)'),
+                    icon: const Icon(Icons.electrical_services_rounded),
+                    border: const OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  controller: _startPotentialController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return AppLocalizations.of(context)!.requiredField;
+                    } else if (double.tryParse(value) == null) {
+                      return AppLocalizations.of(context)!.invalidNumber;
+                    } else if (double.parse(value) < -1 ||
+                        double.parse(value) > 1) {
+                      return AppLocalizations.of(context)!.outOfRange(1, -1);
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12.0),
+                TextFormField(
+                  decoration: InputDecoration(
+                    label: Text(
+                        '${AppLocalizations.of(context)!.measureInterval} (s)'),
+                    icon: const Icon(Icons.timelapse_rounded),
+                    border: const OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  controller: _scanRateController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return AppLocalizations.of(context)!.requiredField;
+                    } else if (double.tryParse(value) == null) {
+                      return AppLocalizations.of(context)!.invalidNumber;
+                    } else if (double.parse(value) <= 0) {
+                      return AppLocalizations.of(context)!
+                          .errorNeedsToBeAPositiveNumber;
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12.0),
+                TextFormField(
+                  decoration: InputDecoration(
+                    label:
+                        Text("${AppLocalizations.of(context)!.duration} (s)"),
+                    icon: const Icon(Icons.timer_outlined),
+                    border: const OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  controller: _cycleCountController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return AppLocalizations.of(context)!.requiredField;
+                    } else if (double.tryParse(value) == null) {
+                      return AppLocalizations.of(context)!.invalidNumber;
+                    } else if (double.parse(value) < 1 ||
+                        // Check if the value is a positive integer
+                        double.parse(value) != double.parse(value).toInt()) {
+                      return AppLocalizations.of(context)!
+                          .errorNeedsToBeAIntegerPositiveNumber;
                     }
                     return null;
                   },

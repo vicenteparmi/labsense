@@ -29,6 +29,14 @@ class _CalibrationPageState extends State<CalibrationPage> {
     });
   }
 
+  String parseDouble(double value) {
+    if (value < 0.1 && value != 0.0) {
+      return value.toStringAsExponential(4);
+    } else {
+      return value.toStringAsFixed(4);
+    }
+  }
+
   @override
   void initState() {
     getCalibration();
@@ -50,7 +58,7 @@ class _CalibrationPageState extends State<CalibrationPage> {
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
-                    'y = ${slope.toStringAsExponential()} · x + ${intercept.toStringAsExponential()}',
+                    'y = ${parseDouble(slope)} · x + ${parseDouble(intercept)}',
                     style: GoogleFonts.unna(
                       fontSize: 24.0,
                       fontStyle: FontStyle.italic,
@@ -65,9 +73,7 @@ class _CalibrationPageState extends State<CalibrationPage> {
                   subtitle:
                       Text(AppLocalizations.of(context)!.slopeDescription),
                   trailing: Chip(
-                    label: Text(slope < 1.0
-                        ? slope.toStringAsExponential(4)
-                        : slope.toStringAsFixed(4)),
+                    label: Text(parseDouble(slope)),
                     backgroundColor: Colors.transparent,
                   ),
                   onTap: () {
@@ -117,9 +123,7 @@ class _CalibrationPageState extends State<CalibrationPage> {
                   subtitle:
                       Text(AppLocalizations.of(context)!.interceptDescription),
                   trailing: Chip(
-                    label: Text(intercept < 1.0
-                        ? intercept.toStringAsExponential(4)
-                        : intercept.toStringAsFixed(4)),
+                    label: Text(parseDouble(intercept)),
                     backgroundColor: Colors.transparent,
                   ),
                   onTap: () {

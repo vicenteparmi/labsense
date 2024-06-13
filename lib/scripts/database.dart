@@ -45,6 +45,7 @@ Future<Database> openMyDatabase() async {
       ''');
 
       // Add some default preocedures to the database on the "procedures" table
+      // Cyclic voltammetry
       await db.insert('procedures', {
         'title': 'Voltametria cíclica',
         'brief_description':
@@ -55,6 +56,19 @@ Future<Database> openMyDatabase() async {
         'start_potential': '0.0',
         'scan_rate': '0.1',
         'cycle_count': '3',
+        'sweep_direction': 1,
+      });
+      // Chronoamperometry
+      await db.insert('procedures', {
+        'title': 'Cronoamperometria',
+        'brief_description':
+            'Cronoamperometria com duração de 10 segundos, com potencial aplicado de 1.0 V.',
+        'model_type': 'chronoamperometry',
+        'initial_potential': '0.0',
+        'final_potential': '0.0',
+        'start_potential': '1.0',
+        'scan_rate': '0.05',
+        'cycle_count': '10',
         'sweep_direction': 1,
       });
 
