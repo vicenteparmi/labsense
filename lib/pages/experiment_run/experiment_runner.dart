@@ -9,6 +9,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:labsense/scripts/bluetooth_com.dart';
 import 'package:labsense/scripts/calculations.dart';
 import 'package:labsense/scripts/database.dart';
+import 'package:labsense/scripts/fake_data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -107,7 +108,7 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
 
     // Animate progress bar
     for (int i = 0; i < 100; i++) {
-      await Future.delayed(Duration(seconds: duration.toInt() ~/ 100), () {
+      await Future.delayed(Duration(seconds: duration.toInt() * 100), () {
         setState(() {
           _progress = i / 100;
         });
@@ -136,29 +137,30 @@ class _ExperimentRunnerState extends State<ExperimentRunner> {
 
   /// Function to listen the data from the device.
   Future<void> _listenData(int index) async {
-    String adress = await getConnectedDevice().then((value) => value[1]);
-    BluetoothConnection connection =
-        await BluetoothConnection.toAddress(adress);
+    // Ensure the data list exists for the current index
+    if (_data.length <= index) {
+      _data.add([]);
+    }
 
-    String result = '';
+    // Timer to add data points every millisecond
+    Timer.periodic(Duration(milliseconds: 10), (timer) {
+      List<List<double>> fakeDataPoint = getFakeData();
+      // Generate a single fake data point at the moment position using tick
+      List<double> fakeData = [
+        fakeDataPoint[timer.tick][0],
+        fakeDataPoint[timer.tick][1]
+      ];
 
-    connection.input!.listen((Uint8List data) {
-      result += ascii.decode(data);
+      // Update the graph with the new data point
+      setState(() {
+        _data[index].add(fakeData);
+      });
 
-      // Add data to state
-      _handleStreamData(index, result);
-
-      // Close the connection if the data is "END"
-      if (ascii.decode(data).contains('E')) {
-        connection.finish();
-        // Disconnect from the device
-        debugPrint('Connection closed onEnd');
-        _shouldRunAgain(index);
-        return;
+      // Condition to stop the timer, adjust as necessary
+      if (timer.tick > 66100) {
+        timer.cancel();
+        // _shouldRunAgain(index);
       }
-    }).onDone(() {
-      connection.finish();
-      debugPrint('Connection closed onDone');
     });
   }
 

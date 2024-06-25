@@ -76,6 +76,18 @@ class _ConnectDeviceState extends State<ConnectDevice> {
     _subscription.onDone(() {
       setState(() {
         isScanning = false;
+        // Add a fake device after the discovery is done
+        const fakeDevice = BluetoothDevice(
+          name: 'LABSENSE',
+          address: 'B5:12:3E:73:A2:12',
+          type: BluetoothDeviceType.classic,
+          bondState: BluetoothBondState.none,
+        );
+        final fakeResult = BluetoothDiscoveryResult(
+          device: fakeDevice,
+          rssi: -34, // Arbitrary RSSI value for the fake device
+        );
+        results.add(fakeResult); // Add the fake device to the results list
       });
     });
   }
@@ -250,6 +262,25 @@ class _ConnectDeviceState extends State<ConnectDevice> {
                     rssi: result.rssi,
                     selected: deviceID == address,
                     onTap: () async {
+                      // Fake bound with the device
+                      if (device.address == 'B5:12:3E:73:A2:12') {
+                        setState(() {
+                          isConnected = true;
+                          connectedDevice = 'LABSENSE';
+                          widget.updateConnection(true, 'LABSENSE');
+                        });
+                        SharedPreferences.getInstance().then((prefs) {
+                          prefs.setStringList('connectedDevice', [
+                            'LABSENSE',
+                            'B5:12:3E:73:A2:12',
+                          ]);
+                        });
+                        return;
+                      }
+
+                      // The rest of the code wont execute for now
+                      return;
+                      // ignore: dead_code
                       try {
                         bool bonded = false;
                         if (device.isBonded) {
